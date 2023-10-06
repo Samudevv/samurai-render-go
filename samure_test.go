@@ -7,11 +7,7 @@ import (
 )
 
 func TestSamure(t *testing.T) {
-	raw, err := InitRawBackend()
-	if !assert.Nil(t, err) {
-		return
-	}
-	ctx, err := CreateContextWithBackend(nil, raw)
+	ctx, err := CreateContextWithBackend(nil, &RawBackend{})
 	if !assert.Nil(t, err) {
 		return
 	}

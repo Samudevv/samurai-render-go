@@ -30,6 +30,6 @@ func GetGlobalApp(idx int) App {
 
 type App interface {
 	OnEvent(ctx Context, event unsafe.Pointer)
-	OnRender(ctx Context, layerSurface unsafe.Pointer, outputGeo unsafe.Pointer, deltaTime float64)
+	OnRender(ctx Context, layerSurface LayerSurface, outputGeo Rect, deltaTime float64)
 	OnUpdate(ctx Context, deltaTime float64)
 }

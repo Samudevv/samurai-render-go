@@ -6,19 +6,19 @@ package samure
 import "C"
 import (
 	"sync"
-	"unsafe"
 )
 
 var globalBackends map[int]Backend
 var globalBackendsMtx sync.Mutex
 
 type Backend interface {
-	OnLayerSurfaceConfigure(ctx Context, layerSurface unsafe.Pointer, width, height int)
-	RenderStart(ctx Context, layerSurface unsafe.Pointer)
-	RenderEnd(ctx Context, layerSurface unsafe.Pointer)
+	Init(ctx Context) error
+	OnLayerSurfaceConfigure(ctx Context, layerSurface LayerSurface, width, height int)
+	RenderStart(ctx Context, layerSurface LayerSurface)
+	RenderEnd(ctx Context, layerSurface LayerSurface)
 	Destroy(ctx Context)
-	AssociateLayerSurface(ctx Context, layerSurface unsafe.Pointer) uint64
-	UnassociateLayerSurface(ctx Context, layerSurface unsafe.Pointer)
+	AssociateLayerSurface(ctx Context, layerSurface LayerSurface) uint64
+	UnassociateLayerSurface(ctx Context, layerSurface LayerSurface)
 }
 
 func AddGlobalBackend(bak Backend) int {
@@ -45,39 +45,40 @@ type RawBackend struct {
 	handle *C.struct_samure_backend_raw
 }
 
-func InitRawBackend() (*RawBackend, error) {
-	r_rs := C.samure_init_backend_raw(nil)
+func (raw *RawBackend) Init(ctx Context) error {
+	r_rs := C.samure_init_backend_raw(ctx.Handle)
 	if r_rs.error != ErrorNone {
-		return nil, NewError(r_rs.error)
+		return NewError(uint64(r_rs.error))
 	}
+	raw.handle = r_rs.result
 
-	return &RawBackend{r_rs.result}, nil
+	return nil
 }
 
-func (raw *RawBackend) OnLayerSurfaceConfigure(ctx Context, layerSurface unsafe.Pointer, width, height int) {
+func (raw *RawBackend) OnLayerSurfaceConfigure(ctx Context, layerSurface LayerSurface, width, height int) {
+	C.samure_backend_raw_on_layer_surface_configure(ctx.Handle, layerSurface.Handle, C.int32_t(width), C.int32_t(height))
+}
+
+func (raw *RawBackend) RenderStart(ctx Context, layerSurface LayerSurface) {
 
 }
 
-func (raw *RawBackend) RenderStart(ctx Context, layerSurface unsafe.Pointer) {
-
-}
-
-func (raw *RawBackend) RenderEnd(ctx Context, layerSurface unsafe.Pointer) {
-	C.samure_backend_raw_render_end(ctx.handle, (*C.struct_samure_layer_surface)(layerSurface))
+func (raw *RawBackend) RenderEnd(ctx Context, layerSurface LayerSurface) {
+	C.samure_backend_raw_render_end(ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
 }
 
 func (raw *RawBackend) Destroy(ctx Context) {
-	C.samure_destroy_backend_raw(ctx.handle)
+	C.samure_destroy_backend_raw(ctx.Handle)
 }
 
-func (raw *RawBackend) AssociateLayerSurface(ctx Context, layerSurface unsafe.Pointer) uint64 {
-	err := C.samure_backend_raw_associate_layer_surface(ctx.handle, (*C.struct_samure_layer_surface)(layerSurface))
+func (raw *RawBackend) AssociateLayerSurface(ctx Context, layerSurface LayerSurface) uint64 {
+	err := C.samure_backend_raw_associate_layer_surface(ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
 	if err != ErrorNone {
 		return uint64(err)
 	}
 	return ErrorNone
 }
 
-func (raw *RawBackend) UnassociateLayerSurface(ctx Context, layerSurface unsafe.Pointer) {
-	C.samure_backend_raw_unassociate_layer_surface(ctx.handle, (*C.struct_samure_layer_surface)(layerSurface))
+func (raw *RawBackend) UnassociateLayerSurface(ctx Context, layerSurface LayerSurface) {
+	C.samure_backend_raw_unassociate_layer_surface(ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
 }

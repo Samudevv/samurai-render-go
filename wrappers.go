@@ -6,7 +6,9 @@ package samure
 #include "samure/output.h"
 */
 import "C"
-import "unsafe"
+import (
+	"unsafe"
+)
 
 //export globalOnEvent
 func globalOnEvent(ctx *C.struct_samure_context, event *C.struct_samure_event, userData unsafe.Pointer) {
@@ -25,8 +27,13 @@ func globalOnRender(ctx *C.struct_samure_context, layerSurface *C.struct_samure_
 
 	a.OnRender(
 		Context{ctx},
-		unsafe.Pointer(layerSurface),
-		unsafe.Pointer(&outputGeo),
+		LayerSurface{layerSurface},
+		Rect{
+			int(outputGeo.x),
+			int(outputGeo.y),
+			int(outputGeo.w),
+			int(outputGeo.h),
+		},
 		float64(deltaTime),
 	)
 }
@@ -50,7 +57,7 @@ func wrapper_backend_on_layer_surface_configure(ctx *C.struct_samure_context, la
 
 	b.OnLayerSurfaceConfigure(
 		Context{ctx},
-		unsafe.Pointer(layer_surface),
+		LayerSurface{layer_surface},
 		int(width),
 		int(height),
 	)
@@ -63,7 +70,7 @@ func wrapper_backend_render_start(ctx *C.struct_samure_context, layer_surface *C
 	b := GetGlobalBackend(idx)
 	b.RenderStart(
 		Context{ctx},
-		unsafe.Pointer(layer_surface),
+		LayerSurface{layer_surface},
 	)
 }
 
@@ -74,7 +81,7 @@ func wrapper_backend_render_end(ctx *C.struct_samure_context, layer_surface *C.s
 	b := GetGlobalBackend(idx)
 	b.RenderEnd(
 		Context{ctx},
-		unsafe.Pointer(layer_surface),
+		LayerSurface{layer_surface},
 	)
 }
 
@@ -94,7 +101,7 @@ func wrapper_backend_associate_layer_surface(ctx *C.struct_samure_context, layer
 	b := GetGlobalBackend(idx)
 	return C.samure_error(b.AssociateLayerSurface(
 		Context{ctx},
-		unsafe.Pointer(layer_surface),
+		LayerSurface{layer_surface},
 	))
 }
 
@@ -105,6 +112,6 @@ func wrapper_backend_unassociate_layer_surface(ctx *C.struct_samure_context, lay
 	b := GetGlobalBackend(idx)
 	b.UnassociateLayerSurface(
 		Context{ctx},
-		unsafe.Pointer(layer_surface),
+		LayerSurface{layer_surface},
 	)
 }

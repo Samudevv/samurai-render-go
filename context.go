@@ -8,7 +8,7 @@ import "C"
 import "unsafe"
 
 type Context struct {
-	handle *C.struct_samure_context
+	Handle *C.struct_samure_context
 }
 
 type ContextConfig struct {
@@ -55,17 +55,59 @@ func CreateContextWithBackend(cfg *ContextConfig, bak Backend) (Context, error) 
 		c.backend = C.SAMURE_BACKEND_NONE
 	}
 
+	not_create_output_layer_surfaces := c.not_create_output_layer_surfaces
+	c.not_create_output_layer_surfaces = 1
+
+	ctx_rs := C.samure_create_context(&c)
+	if ctx_rs.error != ErrorNone {
+		return Context{}, NewError(uint64(ctx_rs.error))
+	}
+
+	ctx := Context{ctx_rs.result}
+
+	if err := bak.Init(ctx); err != nil {
+		ctx.Destroy()
+		return Context{nil}, err
+	}
+
 	bakIdx := AddGlobalBackend(bak)
 	wrapBak := C.create_wrapper_backend(C.int(bakIdx))
 
-	ctx_rs := C.samure_create_context_with_backend(&c, &wrapBak.base)
-	if ctx_rs.error != ErrorNone {
-		return Context{}, NewError(ctx_rs.error)
+	ctx.Handle.backend = &wrapBak.base
+
+	if not_create_output_layer_surfaces == 0 {
+		ctx.Handle.config.not_create_output_layer_surfaces = 0
+		if err := C.samure_context_create_output_layer_surfaces(ctx.Handle); err != ErrorNone {
+			ctx.Destroy()
+			return Context{nil}, NewError(uint64(err))
+		}
 	}
 
 	return Context{ctx_rs.result}, nil
 }
 
 func (ctx Context) Destroy() {
-	C.samure_destroy_context(ctx.handle)
+	C.samure_destroy_context(ctx.Handle)
+}
+
+func (ctx Context) LenOutputs() int {
+	return int(ctx.Handle.num_outputs)
+}
+
+func (ctx Context) Output(idx int) Output {
+	return Output{
+		(*C.struct_samure_output)(unsafe.Pointer(uintptr(unsafe.Pointer(ctx.Handle.outputs)) + unsafe.Sizeof(*ctx.Handle.outputs)*uintptr(idx))),
+	}
+}
+
+func (ctx Context) Run() {
+	C.samure_context_run(ctx.Handle)
+}
+
+func (ctx Context) SetRunning(v bool) {
+	if v {
+		ctx.Handle.running = 1
+	} else {
+		ctx.Handle.running = 0
+	}
 }

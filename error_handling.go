@@ -47,9 +47,9 @@ type Error struct {
 	errorCode C.samure_error
 }
 
-func NewError(errorCode C.samure_error) *Error {
+func NewError(errorCode uint64) *Error {
 	return &Error{
-		errorCode: errorCode,
+		errorCode: C.samure_error(errorCode),
 	}
 }
 
