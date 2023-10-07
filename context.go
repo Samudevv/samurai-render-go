@@ -198,3 +198,55 @@ func (ctx Context) CreateOutputLayerSurfaces() error {
 	}
 	return nil
 }
+
+func (ctx Context) SetPointerInteraction(enable bool) {
+	var cEnable C.int
+	if enable {
+		cEnable = 1
+	}
+	C.samure_context_set_pointer_interaction(ctx.Handle, cEnable)
+}
+
+func (ctx Context) SetInputRegions(rs []Rect) {
+	var cRs *C.struct_samure_rect
+	cRs = (*C.struct_samure_rect)(C.malloc(C.size_t(unsafe.Sizeof(*cRs) * uintptr(len(rs)))))
+	if cRs == nil {
+		return
+	}
+
+	for i, r := range rs {
+		cR := (*C.struct_samure_rect)(unsafe.Pointer(uintptr(unsafe.Pointer(cRs)) + unsafe.Sizeof(*cRs)*uintptr(i)))
+		cR.x = C.int32_t(r.X)
+		cR.y = C.int32_t(r.Y)
+		cR.w = C.int32_t(r.W)
+		cR.h = C.int32_t(r.H)
+	}
+
+	C.samure_context_set_input_regions(ctx.Handle, cRs, C.size_t(len(rs)))
+	C.free(unsafe.Pointer(cRs))
+}
+
+func (ctx Context) SetKeyboardInteraction(enable bool) {
+	var cEnable C.int
+	if enable {
+		cEnable = 1
+	}
+
+	C.samure_context_set_keyboard_interaction(ctx.Handle, cEnable)
+}
+
+func (ctx Context) ProcessEvents() {
+	C.samure_context_process_events(ctx.Handle, ctx.Handle.config.event_callback)
+}
+
+func (ctx Context) RenderOutput(o Output, deltaTime float64) {
+	C.samure_context_render_output(ctx.Handle, o.Handle, ctx.Handle.config.render_callback, C.double(deltaTime))
+}
+
+func (ctx Context) Update(deltaTime float64) {
+	C.samure_context_update(ctx.Handle, ctx.Handle.config.update_callback, C.double(deltaTime))
+}
+
+func (ctx Context) SetPointerShape(shape int) {
+	C.samure_context_set_pointer_shape(ctx.Handle, C.uint32_t(shape))
+}

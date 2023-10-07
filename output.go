@@ -130,7 +130,7 @@ func (o Output) LenSurfaces() int {
 
 func (o Output) Surface(idx int) LayerSurface {
 	return LayerSurface{
-		(*C.struct_samure_layer_surface)(unsafe.Pointer(uintptr(unsafe.Pointer(o.Handle.sfc)) + unsafe.Sizeof(*o.Handle.sfc)*uintptr(idx))),
+		*(**C.struct_samure_layer_surface)(unsafe.Pointer(uintptr(unsafe.Pointer(o.Handle.sfc)) + unsafe.Sizeof(&C.struct_samure_layer_surface{})*uintptr(idx))),
 	}
 }
 
