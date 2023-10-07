@@ -2,6 +2,7 @@ package samure
 
 /*
 #include "samure/context.h"
+#include "samure/backends/opengl.h"
 #include "wrappers.h"
 */
 import "C"
@@ -17,8 +18,45 @@ type ContextConfig struct {
 	TouchInteraction             bool
 	MaxFPS                       int
 	NotCreateOutputLayerSurfaces bool
+	GL                           OpenGLConfig
 
 	App App
+}
+
+func CreateContextConfig(a App) *ContextConfig {
+	return &ContextConfig{
+		MaxFPS: 60,
+		GL:     DefaultOpenGLConfig(),
+		App:    a,
+	}
+}
+
+type OpenGLConfig struct {
+	RedSize      int
+	GreenSize    int
+	BlueSize     int
+	AlphaSize    int
+	Samples      int
+	DepthSize    int
+	MajorVersion int
+	MinorVersion int
+	ProfileMask  int
+	Debug        int
+	ColorSpace   int
+	RenderBuffer int
+}
+
+func DefaultOpenGLConfig() OpenGLConfig {
+	return OpenGLConfig{
+		RedSize:      8,
+		GreenSize:    8,
+		BlueSize:     8,
+		AlphaSize:    8,
+		MajorVersion: 1,
+		ProfileMask:  0x00000001,
+		ColorSpace:   0x308A,
+		RenderBuffer: 0x3084,
+	}
 }
 
 func (cfg ContextConfig) convertToC() C.struct_samure_context_config {
@@ -42,8 +80,29 @@ func (cfg ContextConfig) convertToC() C.struct_samure_context_config {
 	c.render_callback = C.samure_render_callback(C.globalOnRender)
 	c.update_callback = C.samure_update_callback(C.globalOnUpdate)
 	c.user_data = unsafe.Pointer(uintptr(AddGlobalApp(cfg.App)))
+	c.gl = cfg.GL.convertToC()
 
 	return c
+}
+
+func (cfg OpenGLConfig) convertToC() *C.struct_samure_opengl_config {
+	ptr := (*C.struct_samure_opengl_config)(C.malloc(C.size_t(unsafe.Sizeof(C.struct_samure_opengl_config{}))))
+	if ptr == nil {
+		return nil
+	}
+	ptr.red_size = C.int(cfg.RedSize)
+	ptr.green_size = C.int(cfg.GreenSize)
+	ptr.blue_size = C.int(cfg.BlueSize)
+	ptr.alpha_size = C.int(cfg.AlphaSize)
+	ptr.samples = C.int(cfg.Samples)
+	ptr.depth_size = C.int(cfg.DepthSize)
+	ptr.major_version = C.int(cfg.MajorVersion)
+	ptr.minor_version = C.int(cfg.MinorVersion)
+	ptr.profile_mask = C.int(cfg.ProfileMask)
+	ptr.debug = C.int(cfg.Debug)
+	ptr.color_space = C.int(cfg.ColorSpace)
+	ptr.render_buffer = C.int(cfg.RenderBuffer)
+	return ptr
 }
 
 func CreateContextWithBackend(cfg *ContextConfig, bak Backend) (Context, error) {

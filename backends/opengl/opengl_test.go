@@ -49,14 +49,12 @@ func (a *TestApp) OnUpdate(ctx samure.Context, deltaTime float64) {
 }
 
 func TestOpenGL(t *testing.T) {
-	var cfg samure.ContextConfig
-	cfg.MaxFPS = 60
-	cfg.App = &TestApp{}
+	cfg := samure.CreateContextConfig(&TestApp{})
 	cfg.PointerInteraction = true
 
 	var bak Backend
 
-	ctx, err := samure.CreateContextWithBackend(&cfg, &bak)
+	ctx, err := samure.CreateContextWithBackend(cfg, &bak)
 	if !assert.Nil(t, err) {
 		return
 	}

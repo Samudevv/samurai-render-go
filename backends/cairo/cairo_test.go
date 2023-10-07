@@ -41,11 +41,7 @@ func (a *TestCairoApp) OnUpdate(ctx samure.Context, deltaTime float64) {
 }
 
 func TestCairo(t *testing.T) {
-	var cfg samure.ContextConfig
-	cfg.App = &TestCairoApp{}
-	cfg.MaxFPS = 60
-
-	ctx, err := samure.CreateContextWithBackend(&cfg, &Backend{})
+	ctx, err := samure.CreateContextWithBackend(samure.CreateContextConfig(&TestCairoApp{}), &Backend{})
 	if !assert.Nil(t, err) {
 		return
 	}

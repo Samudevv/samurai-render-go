@@ -27,12 +27,13 @@ func (a *TestApp) OnUpdate(ctx Context, deltaTime float64) {
 }
 
 func TestSamure(t *testing.T) {
-	var cfg ContextConfig
-	cfg.MaxFPS = 60
+	cfg := CreateContextConfig(&TestApp{})
 	cfg.PointerInteraction = true
-	cfg.App = &TestApp{}
 
-	ctx, err := CreateContextWithBackend(&cfg, &RawBackend{})
+	ctx, err := CreateContextWithBackend(
+		cfg,
+		&RawBackend{},
+	)
 	if !assert.Nil(t, err) {
 		return
 	}

@@ -1,7 +1,7 @@
 package samure
 
 /*
-#cgo LDFLAGS: -lwayland-client
+#cgo pkg-config: wayland-client
 
 #include "samure/backend.c"
 #include "samure/backends/raw.c"
