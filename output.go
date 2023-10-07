@@ -115,3 +115,13 @@ func (o Output) Screenshot(ctx Context) (SharedBuffer, error) {
 
 	return SharedBuffer{buf_rs.result}, nil
 }
+
+func (o Output) LenSurfaces() int {
+	return int(o.Handle.num_sfc)
+}
+
+func (o Output) Surface(idx int) LayerSurface {
+	return LayerSurface{
+		(*C.struct_samure_layer_surface)(unsafe.Pointer(uintptr(unsafe.Pointer(o.Handle.sfc)) + unsafe.Sizeof(*o.Handle.sfc)*uintptr(idx))),
+	}
+}

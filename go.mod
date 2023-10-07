@@ -3,6 +3,7 @@ module github.com/PucklaJ/samurai-render-go
 go 1.21.1
 
 require (
+	github.com/go-gl/gl v0.0.0-20211210172815-726fda9656d6
 	github.com/gotk3/gotk3 v0.6.2
 	github.com/stretchr/testify v1.8.4
 )
