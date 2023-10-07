@@ -15,6 +15,35 @@ type Rect struct {
 	X, Y, W, H int
 }
 
+func (o Rect) convertToC() C.struct_samure_rect {
+	return C.struct_samure_rect{
+		x: C.int32_t(o.X),
+		y: C.int32_t(o.Y),
+		w: C.int32_t(o.W),
+		h: C.int32_t(o.H),
+	}
+}
+
+func (o Rect) CircleInOutput(cx, cy, r int) bool {
+	return C.samure_circle_in_output(o.convertToC(), C.int32_t(cx), C.int32_t(cy), C.int32_t(r)) != 0
+}
+
+func (o Rect) RectInOutput(x, y, w, h int) bool {
+	return C.samure_rect_in_output(o.convertToC(), C.int32_t(x), C.int32_t(y), C.int32_t(w), C.int32_t(h)) != 0
+}
+
+func (o Rect) SquareInOutput(x, y, size int) bool {
+	return C.samure_square_in_output(o.convertToC(), C.int32_t(x), C.int32_t(y), C.int32_t(size)) != 0
+}
+
+func (o Rect) PointInOutput(x, y int) bool {
+	return C.samure_point_in_output(o.convertToC(), C.int32_t(x), C.int32_t(y)) != 0
+}
+
+func (o Rect) TriangleInOutput(x1, y1, x2, y2, x3, y3 int) bool {
+	return C.samure_triangle_in_output(o.convertToC(), C.int32_t(x1), C.int32_t(y1), C.int32_t(x2), C.int32_t(y2), C.int32_t(x3), C.int32_t(y3)) != 0
+}
+
 func (o Output) CircleInOutput(cx, cy, r int) bool {
 	return C.samure_circle_in_output(o.Handle.geo, C.int32_t(cx), C.int32_t(cy), C.int32_t(r)) != 0
 }
