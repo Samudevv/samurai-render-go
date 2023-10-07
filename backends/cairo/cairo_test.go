@@ -3,7 +3,6 @@ package cairo
 import (
 	"math"
 	"testing"
-	"unsafe"
 
 	samure "github.com/PucklaJ/samurai-render-go"
 	"github.com/gotk3/gotk3/cairo"
@@ -14,7 +13,7 @@ type TestCairoApp struct {
 	elapsedTime float64
 }
 
-func (a *TestCairoApp) OnEvent(ctx samure.Context, event unsafe.Pointer) {
+func (a *TestCairoApp) OnEvent(ctx samure.Context, event interface{}) {
 
 }
 

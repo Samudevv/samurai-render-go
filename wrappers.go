@@ -16,7 +16,7 @@ func globalOnEvent(ctx *C.struct_samure_context, event *C.struct_samure_event, u
 	a := GetGlobalApp(idx)
 	a.OnEvent(
 		Context{ctx},
-		unsafe.Pointer(event),
+		cEventToGoEvent(event),
 	)
 }
 

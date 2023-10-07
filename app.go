@@ -2,7 +2,6 @@ package samure
 
 import (
 	"sync"
-	"unsafe"
 )
 
 var globalApps map[int]App
@@ -29,7 +28,7 @@ func GetGlobalApp(idx int) App {
 }
 
 type App interface {
-	OnEvent(ctx Context, event unsafe.Pointer)
+	OnEvent(ctx Context, event interface{})
 	OnRender(ctx Context, layerSurface LayerSurface, outputGeo Rect, deltaTime float64)
 	OnUpdate(ctx Context, deltaTime float64)
 }
