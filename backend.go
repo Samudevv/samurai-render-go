@@ -95,3 +95,7 @@ type RawSurface struct {
 func (r RawSurface) Data() unsafe.Pointer {
 	return r.Handle.buffer.data
 }
+
+func (r RawSurface) Buffer() SharedBuffer {
+	return SharedBuffer{r.Handle.buffer}
+}

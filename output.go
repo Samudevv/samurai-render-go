@@ -78,11 +78,11 @@ func (o Output) AttachLayerSurface(sfc LayerSurface) {
 	C.samure_output_attach_layer_surface(o.Handle, sfc.Handle)
 }
 
-func (o Output) Screenshot(ctx Context) (unsafe.Pointer, error) {
+func (o Output) Screenshot(ctx Context) (SharedBuffer, error) {
 	buf_rs := C.samure_output_screenshot(ctx.Handle, o.Handle)
 	if buf_rs.error != ErrorNone {
-		return nil, NewError(uint64(buf_rs.error))
+		return SharedBuffer{}, NewError(uint64(buf_rs.error))
 	}
 
-	return unsafe.Pointer(buf_rs.result), nil
+	return SharedBuffer{buf_rs.result}, nil
 }
