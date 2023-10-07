@@ -6,6 +6,7 @@ package samure
 import "C"
 import (
 	"sync"
+	"unsafe"
 )
 
 var globalBackends map[int]Backend
@@ -81,4 +82,16 @@ func (raw *RawBackend) AssociateLayerSurface(ctx Context, layerSurface LayerSurf
 
 func (raw *RawBackend) UnassociateLayerSurface(ctx Context, layerSurface LayerSurface) {
 	C.samure_backend_raw_unassociate_layer_surface(ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
+}
+
+func GetRaw(sfc LayerSurface) RawSurface {
+	return RawSurface{(*C.struct_samure_raw_surface)(sfc.BackendData())}
+}
+
+type RawSurface struct {
+	Handle *C.struct_samure_raw_surface
+}
+
+func (r RawSurface) Data() unsafe.Pointer {
+	return r.Handle.buffer.data
 }
