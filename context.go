@@ -100,6 +100,16 @@ func (ctx Context) Output(idx int) Output {
 	}
 }
 
+func (ctx Context) LenSeats() int {
+	return int(ctx.Handle.num_seats)
+}
+
+func (ctx Context) Seat(idx int) Seat {
+	return Seat{
+		(*C.struct_samure_seat)(unsafe.Pointer(uintptr(unsafe.Pointer(ctx.Handle.seats)) + unsafe.Sizeof(*ctx.Handle.seats)*uintptr(idx))),
+	}
+}
+
 func (ctx Context) Run() {
 	C.samure_context_run(ctx.Handle)
 }
