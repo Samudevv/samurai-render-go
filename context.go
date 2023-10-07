@@ -8,6 +8,12 @@ package samure
 import "C"
 import "unsafe"
 
+const (
+	RenderStateAlways = C.SAMURE_RENDER_STATE_ALWAYS
+	RenderStateNone   = C.SAMURE_RENDER_STATE_NONE
+	RenderStateOnce   = C.SAMURE_RENDER_STATE_ONCE
+)
+
 type Context struct {
 	Handle *C.struct_samure_context
 }
@@ -179,6 +185,10 @@ func (ctx Context) SetRunning(v bool) {
 	} else {
 		ctx.Handle.running = 0
 	}
+}
+
+func (ctx Context) SetRenderState(v int) {
+	ctx.Handle.render_state = uint32(v)
 }
 
 func (ctx Context) CreateOutputLayerSurfaces() error {
