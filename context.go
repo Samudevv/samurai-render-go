@@ -155,7 +155,7 @@ func (ctx Context) LenOutputs() int {
 
 func (ctx Context) Output(idx int) Output {
 	return Output{
-		(*C.struct_samure_output)(unsafe.Pointer(uintptr(unsafe.Pointer(ctx.Handle.outputs)) + unsafe.Sizeof(*ctx.Handle.outputs)*uintptr(idx))),
+		*(**C.struct_samure_output)(unsafe.Pointer(uintptr(unsafe.Pointer(ctx.Handle.outputs)) + unsafe.Sizeof(&C.struct_samure_output{})*uintptr(idx))),
 	}
 }
 
@@ -165,7 +165,7 @@ func (ctx Context) LenSeats() int {
 
 func (ctx Context) Seat(idx int) Seat {
 	return Seat{
-		(*C.struct_samure_seat)(unsafe.Pointer(uintptr(unsafe.Pointer(ctx.Handle.seats)) + unsafe.Sizeof(*ctx.Handle.seats)*uintptr(idx))),
+		*(**C.struct_samure_seat)(unsafe.Pointer(uintptr(unsafe.Pointer(ctx.Handle.seats)) + unsafe.Sizeof(&C.struct_samure_seat{})*uintptr(idx))),
 	}
 }
 
@@ -179,4 +179,12 @@ func (ctx Context) SetRunning(v bool) {
 	} else {
 		ctx.Handle.running = 0
 	}
+}
+
+func (ctx Context) CreateOutputLayerSurfaces() error {
+	err := C.samure_context_create_output_layer_surfaces(ctx.Handle)
+	if err != ErrorNone {
+		return NewError(uint64(err))
+	}
+	return nil
 }

@@ -44,6 +44,14 @@ func (o Rect) TriangleInOutput(x1, y1, x2, y2, x3, y3 int) bool {
 	return C.samure_triangle_in_output(o.convertToC(), C.int32_t(x1), C.int32_t(y1), C.int32_t(x2), C.int32_t(y2), C.int32_t(x3), C.int32_t(y3)) != 0
 }
 
+func (o Rect) RelX(x float64) float64 {
+	return x - float64(o.X)
+}
+
+func (o Rect) RelY(y float64) float64 {
+	return y - float64(o.Y)
+}
+
 func (o Output) CircleInOutput(cx, cy, r int) bool {
 	return C.samure_circle_in_output(o.Handle.geo, C.int32_t(cx), C.int32_t(cy), C.int32_t(r)) != 0
 }
@@ -123,5 +131,18 @@ func (o Output) LenSurfaces() int {
 func (o Output) Surface(idx int) LayerSurface {
 	return LayerSurface{
 		(*C.struct_samure_layer_surface)(unsafe.Pointer(uintptr(unsafe.Pointer(o.Handle.sfc)) + unsafe.Sizeof(*o.Handle.sfc)*uintptr(idx))),
+	}
+}
+
+func (o Output) Name() string {
+	return C.GoString(o.Handle.name)
+}
+
+func (o Output) Geo() Rect {
+	return Rect{
+		int(o.Handle.geo.x),
+		int(o.Handle.geo.y),
+		int(o.Handle.geo.w),
+		int(o.Handle.geo.h),
 	}
 }
