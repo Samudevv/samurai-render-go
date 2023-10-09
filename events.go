@@ -18,15 +18,17 @@ type EventPointerMotion struct {
 }
 
 type EventPointerEnter struct {
-	Seat   Seat
-	Output Output
-	X      float64
-	Y      float64
+	Seat    Seat
+	Output  Output
+	Surface LayerSurface
+	X       float64
+	Y       float64
 }
 
 type EventPointerLeave struct {
-	Seat   Seat
-	Output Output
+	Seat    Seat
+	Output  Output
+	Surface LayerSurface
 }
 
 type EventKeyboardKey struct {
@@ -36,12 +38,34 @@ type EventKeyboardKey struct {
 }
 
 type EventKeyboardEnter struct {
-	Seat   Seat
-	Output Output
+	Seat    Seat
+	Output  Output
+	Surface LayerSurface
 }
 
 type EventKeyboardLeave struct {
 	Seat Seat
+}
+
+type EventTouchDown struct {
+	Seat    Seat
+	Output  Output
+	Surface LayerSurface
+	X       float64
+	Y       float64
+	TouchID int
+}
+
+type EventTouchUp struct {
+	Seat    Seat
+	TouchID int
+}
+
+type EventTouchMotion struct {
+	Seat    Seat
+	X       float64
+	Y       float64
+	TouchID int
 }
 
 func cEventToGoEvent(e *C.struct_samure_event) interface{} {
@@ -60,15 +84,17 @@ func cEventToGoEvent(e *C.struct_samure_event) interface{} {
 		}
 	case C.SAMURE_EVENT_POINTER_ENTER:
 		return EventPointerEnter{
-			Seat:   Seat{e.seat},
-			Output: Output{e.output},
-			X:      float64(e.x),
-			Y:      float64(e.y),
+			Seat:    Seat{e.seat},
+			Output:  Output{e.output},
+			Surface: LayerSurface{e.surface},
+			X:       float64(e.x),
+			Y:       float64(e.y),
 		}
 	case C.SAMURE_EVENT_POINTER_LEAVE:
 		return EventPointerLeave{
-			Seat:   Seat{e.seat},
-			Output: Output{e.output},
+			Seat:    Seat{e.seat},
+			Output:  Output{e.output},
+			Surface: LayerSurface{e.surface},
 		}
 	case C.SAMURE_EVENT_KEYBOARD_KEY:
 		return EventKeyboardKey{
@@ -78,12 +104,34 @@ func cEventToGoEvent(e *C.struct_samure_event) interface{} {
 		}
 	case C.SAMURE_EVENT_KEYBOARD_ENTER:
 		return EventKeyboardEnter{
-			Seat:   Seat{e.seat},
-			Output: Output{e.output},
+			Seat:    Seat{e.seat},
+			Output:  Output{e.output},
+			Surface: LayerSurface{e.surface},
 		}
 	case C.SAMURE_EVENT_KEYBOARD_LEAVE:
 		return EventKeyboardLeave{
 			Seat: Seat{e.seat},
+		}
+	case C.SAMURE_EVENT_TOUCH_DOWN:
+		return EventTouchDown{
+			Seat:    Seat{e.seat},
+			Output:  Output{e.output},
+			Surface: LayerSurface{e.surface},
+			X:       float64(e.x),
+			Y:       float64(e.y),
+			TouchID: int(e.touch_id),
+		}
+	case C.SAMURE_EVENT_TOUCH_UP:
+		return EventTouchUp{
+			Seat:    Seat{e.seat},
+			TouchID: int(e.touch_id),
+		}
+	case C.SAMURE_EVENT_TOUCH_MOTION:
+		return EventTouchMotion{
+			Seat:    Seat{e.seat},
+			X:       float64(e.x),
+			Y:       float64(e.y),
+			TouchID: int(e.touch_id),
 		}
 	default:
 		return nil
