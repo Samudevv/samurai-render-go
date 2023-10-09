@@ -20,6 +20,19 @@
 
 #define LAST_EVENT ctx->events[ctx->num_events - 1]
 
+#define OUTPUT_FOR_SURFACE()                                                   \
+  struct samure_output *output = NULL;                                         \
+  struct samure_layer_surface *layer_surface = NULL;                           \
+  for (size_t i = 0; i < ctx->num_outputs; i++) {                              \
+    for (size_t j = 0; j < ctx->outputs[i]->num_sfc; j++) {                    \
+      if (ctx->outputs[i]->sfc[j]->surface == surface) {                       \
+        output = ctx->outputs[i];                                              \
+        layer_surface = ctx->outputs[i]->sfc[j];                               \
+        break;                                                                 \
+      }                                                                        \
+    }                                                                          \
+  }
+
 void registry_global(void *data, struct wl_registry *registry, uint32_t name,
                      const char *interface, uint32_t version) {
   struct samure_callback_data *d = (struct samure_callback_data *)data;
@@ -83,8 +96,10 @@ void seat_capabilities(void *data, struct wl_seat *seat,
 
   if (capabilities & WL_SEAT_CAPABILITY_POINTER) {
     s->pointer = wl_seat_get_pointer(seat);
-    s->cursor_shape_device = wp_cursor_shape_manager_v1_get_pointer(
-        ctx->cursor_shape_manager, s->pointer);
+    if (ctx->cursor_shape_manager) {
+      s->cursor_shape_device = wp_cursor_shape_manager_v1_get_pointer(
+          ctx->cursor_shape_manager, s->pointer);
+    }
   }
   if (capabilities & WL_SEAT_CAPABILITY_KEYBOARD) {
     s->keyboard = wl_seat_get_keyboard(seat);
@@ -107,23 +122,15 @@ void pointer_enter(void *data, struct wl_pointer *pointer, uint32_t serial,
   struct samure_seat *seat = (struct samure_seat *)d->data;
   struct samure_context *ctx = d->ctx;
 
-  if (seat->cursor_shape != 0) {
+  if (seat->cursor_shape != 0 && seat->cursor_shape_device) {
     wp_cursor_shape_device_v1_set_shape(seat->cursor_shape_device, serial,
                                         seat->cursor_shape);
   }
   seat->last_pointer_enter = serial;
 
-  struct samure_output *output = NULL;
-
-  for (size_t i = 0; i < ctx->num_outputs; i++) {
-    for (size_t j = 0; j < ctx->outputs[i]->num_sfc; j++) {
-      if (ctx->outputs[i]->sfc[j]->surface == surface) {
-        output = ctx->outputs[i];
-        break;
-      }
-    }
-  }
+  OUTPUT_FOR_SURFACE();
   seat->pointer_focus.output = output;
+  seat->pointer_focus.surface = layer_surface;
 
   NEW_EVENT();
 
@@ -132,6 +139,7 @@ void pointer_enter(void *data, struct wl_pointer *pointer, uint32_t serial,
   LAST_EVENT.x = wl_fixed_to_double(surface_x);
   LAST_EVENT.y = wl_fixed_to_double(surface_y);
   LAST_EVENT.output = output;
+  LAST_EVENT.surface = layer_surface;
 }
 
 void pointer_leave(void *data, struct wl_pointer *pointer, uint32_t serial,
@@ -140,23 +148,16 @@ void pointer_leave(void *data, struct wl_pointer *pointer, uint32_t serial,
   struct samure_seat *seat = (struct samure_seat *)d->data;
   struct samure_context *ctx = d->ctx;
 
-  struct samure_output *output = NULL;
-
-  for (size_t i = 0; i < ctx->num_outputs; i++) {
-    for (size_t j = 0; j < ctx->outputs[i]->num_sfc; j++) {
-      if (ctx->outputs[i]->sfc[j]->surface == surface) {
-        output = ctx->outputs[i];
-        break;
-      }
-    }
-  }
+  OUTPUT_FOR_SURFACE();
   seat->pointer_focus.output = NULL;
+  seat->pointer_focus.surface = NULL;
 
   NEW_EVENT();
 
   LAST_EVENT.type = SAMURE_EVENT_POINTER_LEAVE;
   LAST_EVENT.seat = seat;
   LAST_EVENT.output = output;
+  LAST_EVENT.surface = layer_surface;
 }
 
 void pointer_motion(void *data, struct wl_pointer *pointer, uint32_t time,
@@ -207,6 +208,47 @@ void layer_surface_configure(void *data,
 void layer_surface_closed(void *data,
                           struct zwlr_layer_surface_v1 *layer_surface) {}
 
+void output_geometry(void *data, struct wl_output *wl_output, int32_t x,
+                     int32_t y, int32_t physical_width, int32_t physical_height,
+                     int32_t subpixel, const char *make, const char *model,
+                     int32_t transform) {
+  struct samure_output *o = (struct samure_output *)data;
+  o->geo.x = x;
+  o->geo.y = y;
+}
+
+void output_done(void *data, struct wl_output *wl_output) {
+  struct samure_output *o = (struct samure_output *)data;
+  if (o->scale != 0) {
+    o->geo.w /= o->scale;
+    o->geo.h /= o->scale;
+  }
+}
+
+void output_scale(void *data, struct wl_output *wl_output, int32_t factor) {
+  struct samure_output *o = (struct samure_output *)data;
+  o->scale = factor;
+}
+
+void output_name(void *data, struct wl_output *wl_output, const char *name) {
+  struct samure_output *o = (struct samure_output *)data;
+  o->name = strdup(name);
+}
+
+void output_description(void *data, struct wl_output *wl_output,
+                        const char *description) {}
+
+void output_mode(void *data, struct wl_output *wl_output, uint32_t flags,
+                 int32_t width, int32_t height, int32_t refresh) {
+  struct samure_output *o = (struct samure_output *)data;
+  if ((flags & WL_OUTPUT_MODE_CURRENT) == 0) {
+    return;
+  }
+
+  o->geo.w = width;
+  o->geo.h = height;
+}
+
 void xdg_output_logical_position(void *data,
                                  struct zxdg_output_v1 *zxdg_output_v1,
                                  int32_t x, int32_t y) {
@@ -243,24 +285,16 @@ void keyboard_enter(void *data, struct wl_keyboard *wl_keyboard,
   struct samure_context *ctx = d->ctx;
   struct samure_seat *seat = (struct samure_seat *)d->data;
 
-  struct samure_output *output = NULL;
-
-  for (size_t i = 0; i < ctx->num_outputs; i++) {
-    for (size_t j = 0; j < ctx->outputs[i]->num_sfc; j++) {
-      if (ctx->outputs[i]->sfc[j]->surface == surface) {
-        output = ctx->outputs[i];
-        break;
-      }
-    }
-  }
-
+  OUTPUT_FOR_SURFACE();
   seat->keyboard_focus.output = output;
+  seat->keyboard_focus.surface = layer_surface;
 
   NEW_EVENT();
 
   LAST_EVENT.type = SAMURE_EVENT_KEYBOARD_ENTER;
   LAST_EVENT.seat = seat;
   LAST_EVENT.output = output;
+  LAST_EVENT.surface = layer_surface;
 }
 
 void keyboard_leave(void *data, struct wl_keyboard *wl_keyboard,
@@ -269,18 +303,8 @@ void keyboard_leave(void *data, struct wl_keyboard *wl_keyboard,
   struct samure_context *ctx = d->ctx;
   struct samure_seat *seat = (struct samure_seat *)d->data;
 
-  struct samure_output *output = NULL;
-
-  for (size_t i = 0; i < ctx->num_outputs; i++) {
-    for (size_t j = 0; j < ctx->outputs[i]->num_sfc; j++) {
-      if (ctx->outputs[i]->sfc[j]->surface == surface) {
-        output = ctx->outputs[i];
-        break;
-      }
-    }
-  }
-
   seat->keyboard_focus.output = NULL;
+  seat->keyboard_focus.surface = NULL;
 
   NEW_EVENT();
 
@@ -350,6 +374,69 @@ void screencopy_frame_buffer_done(
   struct samure_screenshot_data *d = (struct samure_screenshot_data *)data;
   d->state = SAMURE_SCREENSHOT_DONE;
 }
+
+void touch_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
+                uint32_t time, struct wl_surface *surface, int32_t id,
+                wl_fixed_t x, wl_fixed_t y) {
+  struct samure_callback_data *d = (struct samure_callback_data *)data;
+  struct samure_context *ctx = d->ctx;
+  struct samure_seat *seat = (struct samure_seat *)d->data;
+
+  OUTPUT_FOR_SURFACE();
+  seat->touch_focus.output = output;
+  seat->touch_focus.surface = layer_surface;
+
+  NEW_EVENT();
+
+  LAST_EVENT.type = SAMURE_EVENT_TOUCH_DOWN;
+  LAST_EVENT.seat = seat;
+  LAST_EVENT.output = output;
+  LAST_EVENT.surface = layer_surface;
+  LAST_EVENT.x = wl_fixed_to_double(x);
+  LAST_EVENT.y = wl_fixed_to_double(y);
+  LAST_EVENT.touch_id = id;
+}
+
+void touch_up(void *data, struct wl_touch *wl_touch, uint32_t serial,
+              uint32_t time, int32_t id) {
+  struct samure_callback_data *d = (struct samure_callback_data *)data;
+  struct samure_context *ctx = d->ctx;
+  struct samure_seat *seat = (struct samure_seat *)d->data;
+
+  seat->touch_focus.output = NULL;
+  seat->touch_focus.surface = NULL;
+
+  NEW_EVENT();
+
+  LAST_EVENT.type = SAMURE_EVENT_TOUCH_UP;
+  LAST_EVENT.seat = seat;
+  LAST_EVENT.touch_id = id;
+}
+
+void touch_motion(void *data, struct wl_touch *wl_touch, uint32_t time,
+                  int32_t id, wl_fixed_t x, wl_fixed_t y) {
+  struct samure_callback_data *d = (struct samure_callback_data *)data;
+  struct samure_context *ctx = d->ctx;
+  struct samure_seat *seat = (struct samure_seat *)d->data;
+
+  NEW_EVENT();
+
+  LAST_EVENT.type = SAMURE_EVENT_TOUCH_UP;
+  LAST_EVENT.seat = seat;
+  LAST_EVENT.x = wl_fixed_to_double(x);
+  LAST_EVENT.y = wl_fixed_to_double(y);
+  LAST_EVENT.touch_id = id;
+}
+
+void touch_frame(void *data, struct wl_touch *wl_touch) {}
+
+void touch_cancel(void *data, struct wl_touch *wl_touch) {}
+
+void touch_shape(void *data, struct wl_touch *wl_touch, int32_t id,
+                 wl_fixed_t major, wl_fixed_t minor) {}
+
+void touch_orientation(void *data, struct wl_touch *wl_touch, int32_t id,
+                       wl_fixed_t orientation) {}
 
 struct samure_callback_data *
 samure_create_callback_data(struct samure_context *ctx, void *data) {

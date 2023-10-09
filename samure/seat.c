@@ -26,7 +26,7 @@ samure_create_seat(struct samure_context *ctx, struct wl_seat *seat) {
     wl_keyboard_add_listener(s->keyboard, &keyboard_listener, cbd);
   }
   if (s->touch) {
-    // TODO: Add touch listener
+    wl_touch_add_listener(s->touch, &touch_listener, cbd);
   }
 
   SAMURE_RETURN_RESULT(seat, s);

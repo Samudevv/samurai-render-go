@@ -57,12 +57,8 @@ samure_create_context(struct samure_context_config *config) {
 
   // clang-format off
   if (reg_d.num_outputs == 0)            { error_code |= SAMURE_ERROR_NO_OUTPUTS;              }
-  if (ctx->output_manager == NULL)       { error_code |= SAMURE_ERROR_NO_XDG_OUTPUT_MANAGER;   }
   if (ctx->layer_shell == NULL)          { error_code |= SAMURE_ERROR_NO_LAYER_SHELL;          }
-  if (ctx->shm == NULL)                  { error_code |= SAMURE_ERROR_NO_SHM;                  }
   if (ctx->compositor == NULL)           { error_code |= SAMURE_ERROR_NO_COMPOSITOR;           }
-  if (ctx->cursor_shape_manager == NULL) { error_code |= SAMURE_ERROR_NO_CURSOR_SHAPE_MANAGER; }
-  if (ctx->screencopy_manager == NULL)   { error_code |= SAMURE_ERROR_NO_SCREENCOPY_MANAGER;   }
   // clang-format on
 
   if (SAMURE_IS_ERROR(error_code)) {

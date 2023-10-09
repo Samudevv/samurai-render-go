@@ -43,6 +43,26 @@ extern void layer_surface_configure(void *data,
 extern void layer_surface_closed(void *data,
                                  struct zwlr_layer_surface_v1 *layer_surface);
 
+extern void output_geometry(void *data, struct wl_output *wl_output, int32_t x,
+                            int32_t y, int32_t physical_width,
+                            int32_t physical_height, int32_t subpixel,
+                            const char *make, const char *model,
+                            int32_t transform);
+
+extern void output_done(void *data, struct wl_output *wl_output);
+
+extern void output_scale(void *data, struct wl_output *wl_output,
+                         int32_t factor);
+
+extern void output_name(void *data, struct wl_output *wl_output,
+                        const char *name);
+
+extern void output_description(void *data, struct wl_output *wl_output,
+                               const char *description);
+
+extern void output_mode(void *data, struct wl_output *wl_output, uint32_t flags,
+                        int32_t width, int32_t height, int32_t refresh);
+
 extern void xdg_output_logical_position(void *data,
                                         struct zxdg_output_v1 *zxdg_output_v1,
                                         int32_t x, int32_t y);
@@ -108,6 +128,26 @@ extern void screencopy_frame_linux_dmabuf(
 extern void screencopy_frame_buffer_done(
     void *data, struct zwlr_screencopy_frame_v1 *zwlr_screencopy_frame_v1);
 
+extern void touch_down(void *data, struct wl_touch *wl_touch, uint32_t serial,
+                       uint32_t time, struct wl_surface *surface, int32_t id,
+                       wl_fixed_t x, wl_fixed_t y);
+
+extern void touch_up(void *data, struct wl_touch *wl_touch, uint32_t serial,
+                     uint32_t time, int32_t id);
+
+extern void touch_motion(void *data, struct wl_touch *wl_touch, uint32_t time,
+                         int32_t id, wl_fixed_t x, wl_fixed_t y);
+
+extern void touch_frame(void *data, struct wl_touch *wl_touch);
+
+extern void touch_cancel(void *data, struct wl_touch *wl_touch);
+
+extern void touch_shape(void *data, struct wl_touch *wl_touch, int32_t id,
+                        wl_fixed_t major, wl_fixed_t minor);
+
+extern void touch_orientation(void *data, struct wl_touch *wl_touch, int32_t id,
+                              wl_fixed_t orientation);
+
 static struct wl_registry_listener registry_listener = {
     .global = registry_global,
     .global_remove = registry_global_remove,
@@ -140,6 +180,15 @@ static struct zwlr_layer_surface_v1_listener layer_surface_listener = {
     .closed = layer_surface_closed,
 };
 
+static struct wl_output_listener output_listener = {
+    .description = output_description,
+    .done = output_done,
+    .geometry = output_geometry,
+    .mode = output_mode,
+    .name = output_name,
+    .scale = output_scale,
+};
+
 static struct zxdg_output_v1_listener xdg_output_listener = {
     .logical_position = xdg_output_logical_position,
     .logical_size = xdg_output_logical_size,
@@ -156,6 +205,16 @@ static struct zwlr_screencopy_frame_v1_listener screencopy_frame_listener = {
     .flags = screencopy_frame_flags,
     .linux_dmabuf = screencopy_frame_linux_dmabuf,
     .ready = screencopy_frame_ready,
+};
+
+static struct wl_touch_listener touch_listener = {
+    .cancel = touch_cancel,
+    .down = touch_down,
+    .frame = touch_frame,
+    .motion = touch_motion,
+    .orientation = touch_orientation,
+    .shape = touch_shape,
+    .up = touch_up,
 };
 
 struct samure_callback_data {
