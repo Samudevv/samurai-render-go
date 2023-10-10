@@ -250,3 +250,7 @@ func (ctx Context) Update(deltaTime float64) {
 func (ctx Context) SetPointerShape(shape int) {
 	C.samure_context_set_pointer_shape(ctx.Handle, C.uint32_t(shape))
 }
+
+func (ctx Context) Flush() {
+	C.wl_display_flush(ctx.Handle.display)
+}
