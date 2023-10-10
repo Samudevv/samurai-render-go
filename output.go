@@ -115,8 +115,13 @@ func (o Output) AttachLayerSurface(sfc LayerSurface) {
 	C.samure_output_attach_layer_surface(o.Handle, sfc.Handle)
 }
 
-func (o Output) Screenshot(ctx Context) (SharedBuffer, error) {
-	buf_rs := C.samure_output_screenshot(ctx.Handle, o.Handle)
+func (o Output) Screenshot(ctx Context, captureCursor bool) (SharedBuffer, error) {
+	var cCaptureCursor C.int
+	if captureCursor {
+		cCaptureCursor = 1
+	}
+
+	buf_rs := C.samure_output_screenshot(ctx.Handle, o.Handle, cCaptureCursor)
 	if buf_rs.error != ErrorNone {
 		return SharedBuffer{}, NewError(uint64(buf_rs.error))
 	}

@@ -72,7 +72,7 @@ func main() {
 
 	for i := 0; i < ctx.LenOutputs(); i++ {
 		o := ctx.Output(i)
-		shot, err := o.Screenshot(ctx)
+		shot, err := o.Screenshot(ctx, false)
 		if err != nil {
 			fmt.Fprintf(os.Stderr, "Failed to take screenshot of %s: %v\n", o.Name(), err)
 			continue
