@@ -27,12 +27,13 @@
 package samure
 
 /*
-#cgo pkg-config: wayland-client
+#cgo pkg-config: wayland-client wayland-cursor
 
 #include "samure/backend.c"
 #include "samure/backends/raw.c"
 #include "samure/callbacks.c"
 #include "samure/context.c"
+#include "samure/cursors.c"
 #include "samure/frame_timer.c"
 #include "samure/layer_surface.c"
 #include "samure/output.c"

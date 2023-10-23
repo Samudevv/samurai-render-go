@@ -96,7 +96,3 @@ func (s Seat) KeyboardFocus() Focus {
 func (s Seat) Name() string {
 	return C.GoString(s.Handle.name)
 }
-
-func (s Seat) SetPointerShape(shape int) {
-	C.samure_seat_set_pointer_shape(s.Handle, C.uint32_t(shape))
-}
