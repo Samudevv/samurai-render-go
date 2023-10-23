@@ -108,9 +108,9 @@ func (cfg ContextConfig) convertToC() C.struct_samure_context_config {
 		c.not_create_output_layer_surfaces = 1
 	}
 
-	c.event_callback = C.samure_event_callback(C.globalOnEvent)
-	c.render_callback = C.samure_render_callback(C.globalOnRender)
-	c.update_callback = C.samure_update_callback(C.globalOnUpdate)
+	c.on_event = C.samure_event_callback(C.globalOnEvent)
+	c.on_render = C.samure_render_callback(C.globalOnRender)
+	c.on_update = C.samure_update_callback(C.globalOnUpdate)
 	c.user_data = unsafe.Pointer(uintptr(AddGlobalApp(cfg.App)))
 	c.gl = cfg.GL.convertToC()
 
@@ -262,15 +262,19 @@ func (ctx Context) SetKeyboardInteraction(enable bool) {
 }
 
 func (ctx Context) ProcessEvents() {
-	C.samure_context_process_events(ctx.Handle, ctx.Handle.config.event_callback)
+	C.samure_context_process_events(ctx.Handle)
+}
+
+func (ctx Context) RenderLayerSurface(sfc LayerSurface, o Rect, deltaTime float64) {
+	C.samure_context_render_layer_surface(ctx.Handle, sfc.Handle, o.convertToC(), C.double(deltaTime))
 }
 
 func (ctx Context) RenderOutput(o Output, deltaTime float64) {
-	C.samure_context_render_output(ctx.Handle, o.Handle, ctx.Handle.config.render_callback, C.double(deltaTime))
+	C.samure_context_render_output(ctx.Handle, o.Handle, C.double(deltaTime))
 }
 
 func (ctx Context) Update(deltaTime float64) {
-	C.samure_context_update(ctx.Handle, ctx.Handle.config.update_callback, C.double(deltaTime))
+	C.samure_context_update(ctx.Handle, C.double(deltaTime))
 }
 
 func (ctx Context) SetPointerShape(shape int) {

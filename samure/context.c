@@ -26,7 +26,6 @@
 
 #include "context.h"
 #include "callbacks.h"
-#include "layer_surface.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -50,9 +49,9 @@ samure_create_context_config(samure_event_callback event_callback,
                              samure_update_callback update_callback,
                              void *user_data) {
   struct samure_context_config c = samure_default_context_config();
-  c.event_callback = event_callback;
-  c.render_callback = render_callback;
-  c.update_callback = update_callback;
+  c.on_event = event_callback;
+  c.on_render = render_callback;
+  c.on_update = update_callback;
   c.user_data = user_data;
   return c;
 }
@@ -66,6 +65,9 @@ samure_create_context(struct samure_context_config *config) {
   } else {
     ctx->config = samure_default_context_config();
   }
+  ctx->app.on_event = ctx->config.on_event;
+  ctx->app.on_update = ctx->config.on_update;
+  ctx->app.on_render = ctx->config.on_render;
 
   ctx->display = wl_display_connect(NULL);
   if (ctx->display == NULL) {
@@ -250,26 +252,32 @@ void samure_destroy_context(struct samure_context *ctx) {
 }
 
 void samure_context_run(struct samure_context *ctx) {
+  if (ctx->render_state != SAMURE_RENDER_STATE_NONE) {
+    for (size_t i = 0; i < ctx->num_outputs; i++) {
+      samure_context_render_output(ctx, ctx->outputs[i],
+                                   ctx->frame_timer.delta_time);
+    }
+  }
+
+  // TODO: Maybe add another function (samure_context_dispatch?) that works
+  // entirely using the frame callback and events
   ctx->running = 1;
   while (ctx->running) {
     samure_frame_timer_start_frame(&ctx->frame_timer);
 
-    samure_context_process_events(ctx, ctx->config.event_callback);
+    samure_context_process_events(ctx);
+
+    samure_context_update(ctx, ctx->frame_timer.delta_time);
 
     if (ctx->render_state != SAMURE_RENDER_STATE_NONE) {
       for (size_t i = 0; i < ctx->num_outputs; i++) {
         samure_context_render_output(ctx, ctx->outputs[i],
-                                     ctx->config.render_callback,
                                      ctx->frame_timer.delta_time);
       }
-
       if (ctx->render_state == SAMURE_RENDER_STATE_ONCE) {
         ctx->render_state = SAMURE_RENDER_STATE_NONE;
       }
     }
-
-    samure_context_update(ctx, ctx->config.update_callback,
-                          ctx->frame_timer.delta_time);
 
     samure_frame_timer_end_frame(&ctx->frame_timer);
   }
@@ -354,8 +362,7 @@ void samure_context_set_keyboard_interaction(struct samure_context *ctx,
   }
 }
 
-void samure_context_process_events(struct samure_context *ctx,
-                                   samure_event_callback event_callback) {
+void samure_context_process_events(struct samure_context *ctx) {
   wl_display_roundtrip(ctx->display);
 
   // Process events
@@ -373,8 +380,8 @@ void samure_context_process_events(struct samure_context *ctx,
       }
       break;
     default:
-      if (event_callback) {
-        event_callback(ctx, e, ctx->config.user_data);
+      if (ctx->app.on_event) {
+        ctx->app.on_event(ctx, e, ctx->config.user_data);
       }
       break;
     }
@@ -383,35 +390,48 @@ void samure_context_process_events(struct samure_context *ctx,
   ctx->num_events = 0;
 }
 
+void samure_context_render_layer_surface(struct samure_context *ctx,
+                                         struct samure_layer_surface *sfc,
+                                         struct samure_rect geo,
+                                         double delta_time) {
+  if (sfc->not_ready) {
+    sfc->dirty = 1;
+    return;
+  }
+
+  samure_layer_surface_request_frame(ctx, sfc, geo);
+
+  if (ctx->backend && ctx->backend->render_start) {
+    ctx->backend->render_start(ctx, sfc);
+  }
+
+  if (ctx->app.on_render) {
+    ctx->app.on_render(ctx, sfc, geo, delta_time, ctx->config.user_data);
+  }
+
+  if (ctx->backend && ctx->backend->render_end) {
+    ctx->backend->render_end(ctx, sfc);
+  }
+
+  sfc->dirty = 0;
+}
+
 void samure_context_render_output(struct samure_context *ctx,
                                   struct samure_output *output,
-                                  samure_render_callback render_callback,
                                   double delta_time) {
   for (size_t i = 0; i < output->num_sfc; i++) {
-    if (ctx->backend && ctx->backend->render_start) {
-      ctx->backend->render_start(ctx, output->sfc[i]);
-    }
-
-    if (render_callback) {
-      render_callback(ctx, output->sfc[i], output->geo, delta_time,
-                      ctx->config.user_data);
-    }
-
-    if (ctx->backend && ctx->backend->render_end) {
-      ctx->backend->render_end(ctx, output->sfc[i]);
-    }
+    samure_context_render_layer_surface(ctx, output->sfc[i], output->geo,
+                                        delta_time);
   }
 }
 
-void samure_context_update(struct samure_context *ctx,
-                           samure_update_callback update_callback,
-                           double delta_time) {
+void samure_context_update(struct samure_context *ctx, double delta_time) {
   if (ctx->cursor_engine) {
     samure_cursor_engine_update(ctx->cursor_engine, delta_time);
   }
 
-  if (update_callback) {
-    update_callback(ctx, delta_time, ctx->config.user_data);
+  if (ctx->app.on_update) {
+    ctx->app.on_update(ctx, delta_time, ctx->config.user_data);
   }
 }
 
@@ -445,4 +465,16 @@ void samure_context_set_pointer_shape(struct samure_context *ctx,
       samure_cursor_engine_set_shape(ctx->cursor_engine, ctx->seats[i], shape);
     }
   }
+}
+
+void samure_context_set_render_state(struct samure_context *ctx,
+                                     enum samure_render_state render_state) {
+  if (ctx->render_state == SAMURE_RENDER_STATE_NONE &&
+      render_state != SAMURE_RENDER_STATE_NONE) {
+    for (size_t i = 0; i < ctx->num_outputs; i++) {
+      samure_context_render_output(ctx, ctx->outputs[i],
+                                   ctx->frame_timer.delta_time);
+    }
+  }
+  ctx->render_state = render_state;
 }

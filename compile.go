@@ -37,6 +37,7 @@ package samure
 #include "samure/frame_timer.c"
 #include "samure/layer_surface.c"
 #include "samure/output.c"
+#include "samure/rect.c"
 #include "samure/seat.c"
 #include "samure/shared_memory.c"
 #include "samure/wayland/cursor-shape-v1-client-protocol.c"

@@ -459,6 +459,23 @@ void touch_shape(void *data, struct wl_touch *wl_touch, int32_t id,
 void touch_orientation(void *data, struct wl_touch *wl_touch, int32_t id,
                        wl_fixed_t orientation) {}
 
+void frame_done(void *data, struct wl_callback *wl_callback,
+                uint32_t milliseconds) {
+  struct samure_frame_data *d = (struct samure_frame_data *)data;
+  struct samure_context *ctx = d->ctx;
+  struct samure_rect geo = d->geo;
+  struct samure_layer_surface *sfc = d->layer_surface;
+  free(d);
+
+  wl_callback_destroy(wl_callback);
+  sfc->not_ready = 0;
+
+  if (sfc->dirty) {
+    samure_context_render_layer_surface(ctx, sfc, geo,
+                                        ctx->frame_timer.delta_time);
+  }
+}
+
 struct samure_callback_data *
 samure_create_callback_data(struct samure_context *ctx, void *data) {
   struct samure_callback_data *d = (struct samure_callback_data *)malloc(
@@ -467,6 +484,20 @@ samure_create_callback_data(struct samure_context *ctx, void *data) {
 
   d->ctx = ctx;
   d->data = data;
+
+  return d;
+}
+
+struct samure_frame_data *
+samure_create_frame_data(struct samure_context *ctx, struct samure_rect geo,
+                         struct samure_layer_surface *layer_surface) {
+  struct samure_frame_data *d =
+      (struct samure_frame_data *)malloc(sizeof(struct samure_frame_data));
+  assert(d != NULL);
+
+  d->ctx = ctx;
+  d->geo = geo;
+  d->layer_surface = layer_surface;
 
   return d;
 }
