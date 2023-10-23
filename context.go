@@ -214,7 +214,7 @@ func (ctx Context) SetRunning(v bool) {
 }
 
 func (ctx Context) SetRenderState(v int) {
-	ctx.Handle.render_state = uint32(v)
+	C.samure_context_set_render_state(ctx.Handle, uint32(v))
 }
 
 func (ctx Context) CreateOutputLayerSurfaces() error {
