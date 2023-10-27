@@ -259,8 +259,6 @@ void samure_context_run(struct samure_context *ctx) {
     }
   }
 
-  // TODO: Maybe add another function (samure_context_dispatch?) that works
-  // entirely using the frame callback and events
   ctx->running = 1;
   while (ctx->running) {
     samure_frame_timer_start_frame(&ctx->frame_timer);
@@ -394,12 +392,14 @@ void samure_context_render_layer_surface(struct samure_context *ctx,
                                          struct samure_layer_surface *sfc,
                                          struct samure_rect geo,
                                          double delta_time) {
-  if (sfc->not_ready) {
-    sfc->dirty = 1;
-    return;
-  }
+  if (!ctx->config.not_request_frame) {
+    if (sfc->not_ready) {
+      sfc->dirty = 1;
+      return;
+    }
 
-  samure_layer_surface_request_frame(ctx, sfc, geo);
+    samure_layer_surface_request_frame(ctx, sfc, geo);
+  }
 
   if (ctx->backend && ctx->backend->render_start) {
     ctx->backend->render_start(ctx, sfc);
