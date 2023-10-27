@@ -52,6 +52,7 @@ type ContextConfig struct {
 	TouchInteraction             bool
 	MaxFPS                       int
 	NotCreateOutputLayerSurfaces bool
+	NotRequestFrame              bool
 	GL                           OpenGLConfig
 
 	App App
@@ -108,6 +109,9 @@ func (cfg ContextConfig) convertToC() C.struct_samure_context_config {
 	c.max_fps = C.uint32_t(cfg.MaxFPS)
 	if cfg.NotCreateOutputLayerSurfaces {
 		c.not_create_output_layer_surfaces = 1
+	}
+	if cfg.NotRequestFrame {
+		c.not_request_frame = 1
 	}
 
 	c.on_event = C.samure_event_callback(C.globalOnEvent)
