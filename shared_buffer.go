@@ -67,3 +67,7 @@ func (b SharedBuffer) Copy(src SharedBuffer) error {
 	}
 	return nil
 }
+
+func (b SharedBuffer) Buffer() unsafe.Pointer {
+	return unsafe.Pointer(b.Handle.buffer)
+}

@@ -31,6 +31,7 @@ package samure
 #include "samure/wayland/cursor-shape-v1-client-protocol.h"
 */
 import "C"
+import "unsafe"
 
 const (
 	CursorShapeDefault      = C.WP_CURSOR_SHAPE_DEVICE_V1_SHAPE_DEFAULT
@@ -93,6 +94,26 @@ func (s Seat) KeyboardFocus() Focus {
 	return Focus{s.Handle.keyboard_focus}
 }
 
+func (s Seat) TouchFocus() Focus {
+	return Focus{s.Handle.touch_focus}
+}
+
 func (s Seat) Name() string {
 	return C.GoString(s.Handle.name)
+}
+
+func (s Seat) Seat() unsafe.Pointer {
+	return unsafe.Pointer(s.Handle.seat)
+}
+
+func (s Seat) Pointer() unsafe.Pointer {
+	return unsafe.Pointer(s.Handle.pointer)
+}
+
+func (s Seat) Keyboard() unsafe.Pointer {
+	return unsafe.Pointer(s.Handle.keyboard)
+}
+
+func (s Seat) Touch() unsafe.Pointer {
+	return unsafe.Pointer(s.Handle.touch)
 }

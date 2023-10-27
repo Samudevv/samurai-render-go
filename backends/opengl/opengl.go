@@ -117,3 +117,11 @@ func (gl Backend) InitBindings(ctx samure.Context, initFunc func() error) error 
 func (gl Backend) MakeContextCurrent() {
 	C.samure_backend_opengl_make_context_current(gl.Handle, nil)
 }
+
+func (gl Backend) Display() unsafe.Pointer {
+	return unsafe.Pointer(gl.Handle.display)
+}
+
+func (gl Backend) Context() unsafe.Pointer {
+	return unsafe.Pointer(gl.Handle.context)
+}

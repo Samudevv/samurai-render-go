@@ -32,7 +32,9 @@ package samure
 #include "wrappers.h"
 */
 import "C"
-import "unsafe"
+import (
+	"unsafe"
+)
 
 const (
 	RenderStateAlways = C.SAMURE_RENDER_STATE_ALWAYS
@@ -283,4 +285,28 @@ func (ctx Context) SetPointerShape(shape int) {
 
 func (ctx Context) Flush() {
 	C.wl_display_flush(ctx.Handle.display)
+}
+
+func (ctx Context) Display() unsafe.Pointer {
+	return unsafe.Pointer(ctx.Handle.display)
+}
+
+func (ctx Context) Shm() unsafe.Pointer {
+	return unsafe.Pointer(ctx.Handle.shm)
+}
+
+func (ctx Context) Compositor() unsafe.Pointer {
+	return unsafe.Pointer(ctx.Handle.compositor)
+}
+
+func (ctx Context) LayerShell() unsafe.Pointer {
+	return unsafe.Pointer(ctx.Handle.layer_shell)
+}
+
+func (ctx Context) OutputManager() unsafe.Pointer {
+	return unsafe.Pointer(ctx.Handle.output_manager)
+}
+
+func (ctx Context) ScreencopyManager() unsafe.Pointer {
+	return unsafe.Pointer(ctx.Handle.screencopy_manager)
 }

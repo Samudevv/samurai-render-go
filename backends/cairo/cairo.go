@@ -79,3 +79,8 @@ func Get(sfc samure.LayerSurface) *cairo.Context {
 	cairoSfc := (*C.struct_samure_cairo_surface)(sfc.BackendData())
 	return cairo.WrapContext(uintptr(unsafe.Pointer(cairoSfc.cairo)))
 }
+
+func GetSurface(sfc samure.LayerSurface) *cairo.Surface {
+	cairoSfc := (*C.struct_samure_cairo_surface)(sfc.BackendData())
+	return cairo.WrapSurface(uintptr(unsafe.Pointer(cairoSfc.cairo_surface)))
+}

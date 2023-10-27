@@ -177,3 +177,15 @@ func (o Output) Geo() Rect {
 		int(o.Handle.geo.h),
 	}
 }
+
+func (o Output) Output() unsafe.Pointer {
+	return unsafe.Pointer(o.Handle.output)
+}
+
+func (o Output) XdgOutput() unsafe.Pointer {
+	return unsafe.Pointer(o.Handle.xdg_output)
+}
+
+func (o Output) Scale() int {
+	return int(o.Handle.scale)
+}

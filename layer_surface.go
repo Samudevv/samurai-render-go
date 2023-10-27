@@ -93,3 +93,11 @@ func (sfc LayerSurface) Destroy(ctx Context) {
 func (sfc LayerSurface) DrawBuffer(b SharedBuffer) {
 	C.samure_layer_surface_draw_buffer(sfc.Handle, b.Handle)
 }
+
+func (sfc LayerSurface) Surface() unsafe.Pointer {
+	return unsafe.Pointer(sfc.Handle.surface)
+}
+
+func (sfc LayerSurface) LayerSurface() unsafe.Pointer {
+	return unsafe.Pointer(sfc.Handle.layer_surface)
+}
