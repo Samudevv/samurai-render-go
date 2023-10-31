@@ -55,7 +55,7 @@ func (s *ScreenshotDraw) OnEvent(ctx samure.Context, event interface{}) {
 	}
 }
 
-func (s *ScreenshotDraw) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o samure.Rect, deltaTime float64) {
+func (s *ScreenshotDraw) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o samure.Rect) {
 	c := samureCairo.Get(layerSurface)
 	c.SetOperator(cairo.OPERATOR_SOURCE)
 
@@ -68,7 +68,7 @@ func (s *ScreenshotDraw) OnRender(ctx samure.Context, layerSurface samure.LayerS
 	c.SelectFontFace("sans-serif", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 	c.SetFontSize(50)
 
-	str := fmt.Sprint("FPS: ", int(1.0/deltaTime))
+	str := fmt.Sprint("FPS: ", "sixty")
 
 	te := c.TextExtents(str)
 	c.SetSourceRGBA(0.0, 0.0, 0.0, 0.0)
@@ -87,7 +87,7 @@ func main() {
 	cfg := samure.CreateContextConfig(&ScreenshotDraw{})
 	cfg.NotCreateOutputLayerSurfaces = true
 	cfg.PointerInteraction = true
-	cfg.MaxFPS = 60
+	cfg.MaxUpdateFrequency = 60
 
 	ctx, err := samure.CreateContextWithBackend(cfg, &samureCairo.Backend{})
 	if err != nil {

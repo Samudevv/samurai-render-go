@@ -44,7 +44,7 @@ func (a *TestApp) OnEvent(ctx Context, event interface{}) {
 	}
 }
 
-func (a *TestApp) OnRender(ctx Context, layerSurface LayerSurface, outputGeo Rect, deltaTime float64) {
+func (a *TestApp) OnRender(ctx Context, layerSurface LayerSurface, outputGeo Rect) {
 
 }
 

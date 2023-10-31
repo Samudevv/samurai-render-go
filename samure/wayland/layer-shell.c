@@ -59,11 +59,12 @@ static const struct wl_interface *wlr_layer_shell_unstable_v1_types[] = {
 
 static const struct wl_message zwlr_layer_shell_v1_requests[] = {
 	{ "get_layer_surface", "no?ous", wlr_layer_shell_unstable_v1_types + 4 },
+	{ "destroy", "3", wlr_layer_shell_unstable_v1_types + 0 },
 };
 
 WL_PRIVATE const struct wl_interface zwlr_layer_shell_v1_interface = {
-	"zwlr_layer_shell_v1", 1,
-	1, zwlr_layer_shell_v1_requests,
+	"zwlr_layer_shell_v1", 4,
+	2, zwlr_layer_shell_v1_requests,
 	0, NULL,
 };
 
@@ -76,6 +77,7 @@ static const struct wl_message zwlr_layer_surface_v1_requests[] = {
 	{ "get_popup", "o", wlr_layer_shell_unstable_v1_types + 9 },
 	{ "ack_configure", "u", wlr_layer_shell_unstable_v1_types + 0 },
 	{ "destroy", "", wlr_layer_shell_unstable_v1_types + 0 },
+	{ "set_layer", "2u", wlr_layer_shell_unstable_v1_types + 0 },
 };
 
 static const struct wl_message zwlr_layer_surface_v1_events[] = {
@@ -84,8 +86,8 @@ static const struct wl_message zwlr_layer_surface_v1_events[] = {
 };
 
 WL_PRIVATE const struct wl_interface zwlr_layer_surface_v1_interface = {
-	"zwlr_layer_surface_v1", 1,
-	8, zwlr_layer_surface_v1_requests,
+	"zwlr_layer_surface_v1", 4,
+	9, zwlr_layer_surface_v1_requests,
 	2, zwlr_layer_surface_v1_events,
 };
 

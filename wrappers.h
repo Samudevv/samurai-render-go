@@ -34,8 +34,7 @@ extern void globalOnEvent(struct samure_context *ctx,
                           struct samure_event *event, void *user_data);
 extern void globalOnRender(struct samure_context *ctx,
                            struct samure_layer_surface *layer_surface,
-                           struct samure_rect output_geo, double delta_time,
-                           void *user_data);
+                           struct samure_rect output_geo, void *user_data);
 extern void globalOnUpdate(struct samure_context *ctx, double delta_time,
                            void *user_data);
 

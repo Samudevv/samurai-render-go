@@ -28,7 +28,7 @@ package samure
 
 /*
 #include "samure/seat.h"
-#include "samure/wayland/cursor-shape-v1-client-protocol.h"
+#include "samure/wayland/cursor-shape.h"
 */
 import "C"
 import "unsafe"

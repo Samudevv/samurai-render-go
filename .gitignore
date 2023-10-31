@@ -2,3 +2,4 @@
 !.gitignore
 samurai-render-go
 go.sum
+cmd/screenshot_draw/screenshot_draw

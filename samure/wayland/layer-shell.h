@@ -88,9 +88,17 @@ extern const struct wl_interface zwlr_layer_shell_v1_interface;
  * are designed to be rendered as a layer of a stacked desktop-like
  * environment.
  *
- * Layer surface state (size, anchor, exclusive zone, margin, interactivity)
- * is double-buffered, and will be applied at the time wl_surface.commit of
- * the corresponding wl_surface is called.
+ * Layer surface state (layer, size, anchor, exclusive zone,
+ * margin, interactivity) is double-buffered, and will be applied at the
+ * time wl_surface.commit of the corresponding wl_surface is called.
+ *
+ * Attaching a null buffer to a layer surface unmaps it.
+ *
+ * Unmapping a layer_surface means that the surface cannot be shown by the
+ * compositor until it is explicitly mapped again. The layer_surface
+ * returns to the state it had right after layer_shell.get_layer_surface.
+ * The client can re-map the surface by performing a commit without any
+ * buffer attached, waiting for a configure event and handling it as usual.
  * @section page_iface_zwlr_layer_surface_v1_api API
  * See @ref iface_zwlr_layer_surface_v1.
  */
@@ -101,9 +109,17 @@ extern const struct wl_interface zwlr_layer_shell_v1_interface;
  * are designed to be rendered as a layer of a stacked desktop-like
  * environment.
  *
- * Layer surface state (size, anchor, exclusive zone, margin, interactivity)
- * is double-buffered, and will be applied at the time wl_surface.commit of
- * the corresponding wl_surface is called.
+ * Layer surface state (layer, size, anchor, exclusive zone,
+ * margin, interactivity) is double-buffered, and will be applied at the
+ * time wl_surface.commit of the corresponding wl_surface is called.
+ *
+ * Attaching a null buffer to a layer surface unmaps it.
+ *
+ * Unmapping a layer_surface means that the surface cannot be shown by the
+ * compositor until it is explicitly mapped again. The layer_surface
+ * returns to the state it had right after layer_shell.get_layer_surface.
+ * The client can re-map the surface by performing a commit without any
+ * buffer attached, waiting for a configure event and handling it as usual.
  */
 extern const struct wl_interface zwlr_layer_surface_v1_interface;
 #endif
@@ -148,12 +164,17 @@ enum zwlr_layer_shell_v1_layer {
 #endif /* ZWLR_LAYER_SHELL_V1_LAYER_ENUM */
 
 #define ZWLR_LAYER_SHELL_V1_GET_LAYER_SURFACE 0
+#define ZWLR_LAYER_SHELL_V1_DESTROY 1
 
 
 /**
  * @ingroup iface_zwlr_layer_shell_v1
  */
 #define ZWLR_LAYER_SHELL_V1_GET_LAYER_SURFACE_SINCE_VERSION 1
+/**
+ * @ingroup iface_zwlr_layer_shell_v1
+ */
+#define ZWLR_LAYER_SHELL_V1_DESTROY_SINCE_VERSION 3
 
 /** @ingroup iface_zwlr_layer_shell_v1 */
 static inline void
@@ -175,13 +196,6 @@ zwlr_layer_shell_v1_get_version(struct zwlr_layer_shell_v1 *zwlr_layer_shell_v1)
 	return wl_proxy_get_version((struct wl_proxy *) zwlr_layer_shell_v1);
 }
 
-/** @ingroup iface_zwlr_layer_shell_v1 */
-static inline void
-zwlr_layer_shell_v1_destroy(struct zwlr_layer_shell_v1 *zwlr_layer_shell_v1)
-{
-	wl_proxy_destroy((struct wl_proxy *) zwlr_layer_shell_v1);
-}
-
 /**
  * @ingroup iface_zwlr_layer_shell_v1
  *
@@ -193,6 +207,12 @@ zwlr_layer_shell_v1_destroy(struct zwlr_layer_shell_v1 *zwlr_layer_shell_v1)
  * or committed is a client error, and any attempts by a client to attach
  * or manipulate a buffer prior to the first layer_surface.configure call
  * must also be treated as errors.
+ *
+ * After creating a layer_surface object and setting it up, the client
+ * must perform an initial commit without any buffer attached.
+ * The compositor will reply with a layer_surface.configure event.
+ * The client must acknowledge it and is then allowed to attach a buffer
+ * to map the surface.
  *
  * You may pass NULL for output to allow the compositor to decide which
  * output to use. Generally this will be the one that the user most
@@ -212,6 +232,100 @@ zwlr_layer_shell_v1_get_layer_surface(struct zwlr_layer_shell_v1 *zwlr_layer_she
 	return (struct zwlr_layer_surface_v1 *) id;
 }
 
+/**
+ * @ingroup iface_zwlr_layer_shell_v1
+ *
+ * This request indicates that the client will not use the layer_shell
+ * object any more. Objects that have been created through this instance
+ * are not affected.
+ */
+static inline void
+zwlr_layer_shell_v1_destroy(struct zwlr_layer_shell_v1 *zwlr_layer_shell_v1)
+{
+	wl_proxy_marshal_flags((struct wl_proxy *) zwlr_layer_shell_v1,
+			 ZWLR_LAYER_SHELL_V1_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) zwlr_layer_shell_v1), WL_MARSHAL_FLAG_DESTROY);
+}
+
+#ifndef ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ENUM
+#define ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ENUM
+/**
+ * @ingroup iface_zwlr_layer_surface_v1
+ * types of keyboard interaction possible for a layer shell surface
+ *
+ * Types of keyboard interaction possible for layer shell surfaces. The
+ * rationale for this is twofold: (1) some applications are not interested
+ * in keyboard events and not allowing them to be focused can improve the
+ * desktop experience; (2) some applications will want to take exclusive
+ * keyboard focus.
+ */
+enum zwlr_layer_surface_v1_keyboard_interactivity {
+	/**
+	 * no keyboard focus is possible
+	 *
+	 * This value indicates that this surface is not interested in
+	 * keyboard events and the compositor should never assign it the
+	 * keyboard focus.
+	 *
+	 * This is the default value, set for newly created layer shell
+	 * surfaces.
+	 *
+	 * This is useful for e.g. desktop widgets that display information
+	 * or only have interaction with non-keyboard input devices.
+	 */
+	ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_NONE = 0,
+	/**
+	 * request exclusive keyboard focus
+	 *
+	 * Request exclusive keyboard focus if this surface is above the
+	 * shell surface layer.
+	 *
+	 * For the top and overlay layers, the seat will always give
+	 * exclusive keyboard focus to the top-most layer which has
+	 * keyboard interactivity set to exclusive. If this layer contains
+	 * multiple surfaces with keyboard interactivity set to exclusive,
+	 * the compositor determines the one receiving keyboard events in
+	 * an implementation- defined manner. In this case, no guarantee is
+	 * made when this surface will receive keyboard focus (if ever).
+	 *
+	 * For the bottom and background layers, the compositor is allowed
+	 * to use normal focus semantics.
+	 *
+	 * This setting is mainly intended for applications that need to
+	 * ensure they receive all keyboard events, such as a lock screen
+	 * or a password prompt.
+	 */
+	ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_EXCLUSIVE = 1,
+	/**
+	 * request regular keyboard focus semantics
+	 *
+	 * This requests the compositor to allow this surface to be
+	 * focused and unfocused by the user in an implementation-defined
+	 * manner. The user should be able to unfocus this surface even
+	 * regardless of the layer it is on.
+	 *
+	 * Typically, the compositor will want to use its normal mechanism
+	 * to manage keyboard focus between layer shell surfaces with this
+	 * setting and regular toplevels on the desktop layer (e.g. click
+	 * to focus). Nevertheless, it is possible for a compositor to
+	 * require a special interaction to focus or unfocus layer shell
+	 * surfaces (e.g. requiring a click even if focus follows the mouse
+	 * normally, or providing a keybinding to switch focus between
+	 * layers).
+	 *
+	 * This setting is mainly intended for desktop shell components
+	 * (e.g. panels) that allow keyboard interaction. Using this option
+	 * can allow implementing a desktop shell that can be fully usable
+	 * without the mouse.
+	 * @since 4
+	 */
+	ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND = 2,
+};
+/**
+ * @ingroup iface_zwlr_layer_surface_v1
+ */
+#define ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ON_DEMAND_SINCE_VERSION 4
+#endif /* ZWLR_LAYER_SURFACE_V1_KEYBOARD_INTERACTIVITY_ENUM */
+
 #ifndef ZWLR_LAYER_SURFACE_V1_ERROR_ENUM
 #define ZWLR_LAYER_SURFACE_V1_ERROR_ENUM
 enum zwlr_layer_surface_v1_error {
@@ -227,6 +341,10 @@ enum zwlr_layer_surface_v1_error {
 	 * anchor bitfield is invalid
 	 */
 	ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_ANCHOR = 2,
+	/**
+	 * keyboard interactivity is invalid
+	 */
+	ZWLR_LAYER_SURFACE_V1_ERROR_INVALID_KEYBOARD_INTERACTIVITY = 3,
 };
 #endif /* ZWLR_LAYER_SURFACE_V1_ERROR_ENUM */
 
@@ -320,6 +438,7 @@ zwlr_layer_surface_v1_add_listener(struct zwlr_layer_surface_v1 *zwlr_layer_surf
 #define ZWLR_LAYER_SURFACE_V1_GET_POPUP 5
 #define ZWLR_LAYER_SURFACE_V1_ACK_CONFIGURE 6
 #define ZWLR_LAYER_SURFACE_V1_DESTROY 7
+#define ZWLR_LAYER_SURFACE_V1_SET_LAYER 8
 
 /**
  * @ingroup iface_zwlr_layer_surface_v1
@@ -362,6 +481,10 @@ zwlr_layer_surface_v1_add_listener(struct zwlr_layer_surface_v1 *zwlr_layer_surf
  * @ingroup iface_zwlr_layer_surface_v1
  */
 #define ZWLR_LAYER_SURFACE_V1_DESTROY_SINCE_VERSION 1
+/**
+ * @ingroup iface_zwlr_layer_surface_v1
+ */
+#define ZWLR_LAYER_SURFACE_V1_SET_LAYER_SINCE_VERSION 2
 
 /** @ingroup iface_zwlr_layer_surface_v1 */
 static inline void
@@ -408,7 +531,7 @@ zwlr_layer_surface_v1_set_size(struct zwlr_layer_surface_v1 *zwlr_layer_surface_
  * @ingroup iface_zwlr_layer_surface_v1
  *
  * Requests that the compositor anchor the surface to the specified edges
- * and corners. If two orthoginal edges are specified (e.g. 'top' and
+ * and corners. If two orthogonal edges are specified (e.g. 'top' and
  * 'left'), then the anchor point will be the intersection of the edges
  * (e.g. the top left corner of the output); otherwise the anchor point
  * will be centered on that edge, or in the center if none is specified.
@@ -425,20 +548,25 @@ zwlr_layer_surface_v1_set_anchor(struct zwlr_layer_surface_v1 *zwlr_layer_surfac
 /**
  * @ingroup iface_zwlr_layer_surface_v1
  *
- * Requests that the compositor avoids occluding an area of the surface
- * with other surfaces. The compositor's use of this information is
+ * Requests that the compositor avoids occluding an area with other
+ * surfaces. The compositor's use of this information is
  * implementation-dependent - do not assume that this region will not
  * actually be occluded.
  *
- * A positive value is only meaningful if the surface is anchored to an
- * edge, rather than a corner. The zone is the number of surface-local
- * coordinates from the edge that are considered exclusive.
+ * A positive value is only meaningful if the surface is anchored to one
+ * edge or an edge and both perpendicular edges. If the surface is not
+ * anchored, anchored to only two perpendicular edges (a corner), anchored
+ * to only two parallel edges or anchored to all edges, a positive value
+ * will be treated the same as zero.
+ *
+ * A positive zone is the distance from the edge in surface-local
+ * coordinates to consider exclusive.
  *
  * Surfaces that do not wish to have an exclusive zone may instead specify
  * how they should interact with surfaces that do. If set to zero, the
  * surface indicates that it would like to be moved to avoid occluding
- * surfaces with a positive excluzive zone. If set to -1, the surface
- * indicates that it would not like to be moved to accomodate for other
+ * surfaces with a positive exclusive zone. If set to -1, the surface
+ * indicates that it would not like to be moved to accommodate for other
  * surfaces, and the compositor should extend it all the way to the edges
  * it is anchored to.
  *
@@ -481,17 +609,18 @@ zwlr_layer_surface_v1_set_margin(struct zwlr_layer_surface_v1 *zwlr_layer_surfac
 /**
  * @ingroup iface_zwlr_layer_surface_v1
  *
- * Set to 1 to request that the seat send keyboard events to this layer
- * surface. For layers below the shell surface layer, the seat will use
- * normal focus semantics. For layers above the shell surface layers, the
- * seat will always give exclusive keyboard focus to the top-most layer
- * which has keyboard interactivity set to true.
+ * Set how keyboard events are delivered to this surface. By default,
+ * layer shell surfaces do not receive keyboard events; this request can
+ * be used to change this.
+ *
+ * This setting is inherited by child surfaces set by the get_popup
+ * request.
  *
  * Layer surfaces receive pointer, touch, and tablet events normally. If
  * you do not want to receive them, set the input region on your surface
  * to an empty region.
  *
- * Events is double-buffered, see wl_surface.commit.
+ * Keyboard interactivity is double-buffered, see wl_surface.commit.
  */
 static inline void
 zwlr_layer_surface_v1_set_keyboard_interactivity(struct zwlr_layer_surface_v1 *zwlr_layer_surface_v1, uint32_t keyboard_interactivity)
@@ -554,6 +683,20 @@ zwlr_layer_surface_v1_destroy(struct zwlr_layer_surface_v1 *zwlr_layer_surface_v
 {
 	wl_proxy_marshal_flags((struct wl_proxy *) zwlr_layer_surface_v1,
 			 ZWLR_LAYER_SURFACE_V1_DESTROY, NULL, wl_proxy_get_version((struct wl_proxy *) zwlr_layer_surface_v1), WL_MARSHAL_FLAG_DESTROY);
+}
+
+/**
+ * @ingroup iface_zwlr_layer_surface_v1
+ *
+ * Change the layer that the surface is rendered on.
+ *
+ * Layer is double-buffered, see wl_surface.commit.
+ */
+static inline void
+zwlr_layer_surface_v1_set_layer(struct zwlr_layer_surface_v1 *zwlr_layer_surface_v1, uint32_t layer)
+{
+	wl_proxy_marshal_flags((struct wl_proxy *) zwlr_layer_surface_v1,
+			 ZWLR_LAYER_SURFACE_V1_SET_LAYER, NULL, wl_proxy_get_version((struct wl_proxy *) zwlr_layer_surface_v1), 0, layer);
 }
 
 #ifdef  __cplusplus

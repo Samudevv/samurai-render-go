@@ -26,10 +26,10 @@
 
 #pragma once
 
-#include "wayland/cursor-shape-v1-client-protocol.h"
-#include "wayland/wlr-layer-shell-unstable-v1.h"
-#include "wayland/wlr-screencopy-unstable-v1.h"
-#include "wayland/xdg-output-unstable-v1.h"
+#include "wayland/cursor-shape.h"
+#include "wayland/layer-shell.h"
+#include "wayland/screencopy.h"
+#include "wayland/xdg-output.h"
 #include <wayland-client.h>
 
 #include "backend.h"
@@ -41,7 +41,6 @@
 #include "seat.h"
 
 #define SAMURE_NO_CONTEXT_CONFIG NULL
-#define SAMURE_MAX_FPS 60
 
 struct samure_context;
 struct samure_opengl_config;
@@ -64,7 +63,7 @@ typedef void (*samure_event_callback)(struct samure_context *ctx,
                                       void *user_data);
 typedef void (*samure_render_callback)(
     struct samure_context *ctx, struct samure_layer_surface *layer_surface,
-    struct samure_rect output_geo, double delta_time, void *user_data);
+    struct samure_rect output_geo, void *user_data);
 typedef void (*samure_update_callback)(struct samure_context *ctx,
                                        double delta_time, void *user_data);
 
@@ -79,7 +78,7 @@ struct samure_context_config {
   int pointer_interaction;
   int keyboard_interaction;
   int touch_interaction;
-  uint32_t max_fps;
+  uint32_t max_update_frequency;
   struct samure_opengl_config *gl;
   int not_create_output_layer_surfaces;
   int not_request_frame;
@@ -91,7 +90,6 @@ struct samure_context_config {
   void *user_data;
 };
 
-extern struct samure_context_config samure_default_context_config();
 extern struct samure_context_config
 samure_create_context_config(samure_event_callback event_callback,
                              samure_render_callback render_callback,
@@ -161,11 +159,10 @@ extern void samure_context_process_events(struct samure_context *ctx);
 extern void
 samure_context_render_layer_surface(struct samure_context *ctx,
                                     struct samure_layer_surface *sfc,
-                                    struct samure_rect geo, double delta_time);
+                                    struct samure_rect geo);
 
 extern void samure_context_render_output(struct samure_context *ctx,
-                                         struct samure_output *output,
-                                         double delta_time);
+                                         struct samure_output *output);
 
 extern void samure_context_update(struct samure_context *ctx,
                                   double delta_time);

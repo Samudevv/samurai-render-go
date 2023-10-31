@@ -47,7 +47,7 @@ func globalOnEvent(ctx *C.struct_samure_context, event *C.struct_samure_event, u
 }
 
 //export globalOnRender
-func globalOnRender(ctx *C.struct_samure_context, layerSurface *C.struct_samure_layer_surface, outputGeo C.struct_samure_rect, deltaTime C.double, userData unsafe.Pointer) {
+func globalOnRender(ctx *C.struct_samure_context, layerSurface *C.struct_samure_layer_surface, outputGeo C.struct_samure_rect, userData unsafe.Pointer) {
 	idx := int(uintptr(userData))
 	a := GetGlobalApp(idx)
 
@@ -60,7 +60,6 @@ func globalOnRender(ctx *C.struct_samure_context, layerSurface *C.struct_samure_
 			int(outputGeo.w),
 			int(outputGeo.h),
 		},
-		float64(deltaTime),
 	)
 }
 

@@ -26,7 +26,7 @@
 
 #pragma once
 
-#include "wayland/wlr-layer-shell-unstable-v1.h"
+#include "wayland/layer-shell.h"
 #include <wayland-client.h>
 
 #include "rect.h"
@@ -35,6 +35,9 @@
 #define SAMURE_LAYER_SURFACE_ANCHOR_FILL                                       \
   (ZWLR_LAYER_SURFACE_V1_ANCHOR_TOP | ZWLR_LAYER_SURFACE_V1_ANCHOR_LEFT |      \
    ZWLR_LAYER_SURFACE_V1_ANCHOR_RIGHT | ZWLR_LAYER_SURFACE_V1_ANCHOR_BOTTOM)
+#define SAMURE_LAYER_BACKGROUND ZWLR_LAYER_SHELL_V1_LAYER_BACKGROUND
+#define SAMURE_LAYER_BOTTOM ZWLR_LAYER_SHELL_V1_LAYER_BOTTOM
+#define SAMURE_LAYER_TOP ZWLR_LAYER_SHELL_V1_LAYER_TOP
 #define SAMURE_LAYER_OVERLAY ZWLR_LAYER_SHELL_V1_LAYER_OVERLAY
 
 struct samure_context;
@@ -50,6 +53,11 @@ struct samure_layer_surface {
   struct samure_callback_data *callback_data;
   int not_ready;
   int dirty;
+  int configured;
+
+  double frame_start_time; // Absolute time of the last frame (for internal use)
+  double frame_delta_time; // The actual time that passes between each call to
+                           // samure_context_render_layer_surface in seconds
 };
 
 SAMURE_DEFINE_RESULT(layer_surface);

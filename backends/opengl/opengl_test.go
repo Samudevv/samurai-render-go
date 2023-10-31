@@ -46,7 +46,7 @@ func (a *TestApp) OnEvent(ctx samure.Context, event interface{}) {
 	}
 }
 
-func (a *TestApp) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o samure.Rect, deltaTime float64) {
+func (a *TestApp) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, o samure.Rect) {
 	gl.ClearColor(1.0, 0.0, 0.0, 0.5)
 	gl.Clear(gl.COLOR_BUFFER_BIT)
 

@@ -30,8 +30,7 @@
 #include "layer_surface.h"
 #include "rect.h"
 #include "shared_memory.h"
-#include "wayland/wlr-layer-shell-unstable-v1.h"
-#include "wayland/xdg-output-unstable-v1.h"
+#include "wayland/xdg-output.h"
 #include <wayland-client.h>
 
 #define OUT_X2(geo, val) (val - geo.x)
@@ -46,9 +45,11 @@ struct samure_output {
   struct zxdg_output_v1 *xdg_output;
   struct samure_layer_surface **sfc;
   size_t num_sfc;
+
   struct samure_rect geo;
   char *name;
   int32_t scale;
+  int32_t refresh_rate;
 };
 
 enum samure_screenshot_state {

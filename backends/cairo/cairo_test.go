@@ -43,7 +43,7 @@ func (a *TestCairoApp) OnEvent(ctx samure.Context, event interface{}) {
 
 }
 
-func (a *TestCairoApp) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, outputGeo samure.Rect, deltaTime float64) {
+func (a *TestCairoApp) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, outputGeo samure.Rect) {
 	c := Get(layerSurface)
 
 	c.SetOperator(cairo.OPERATOR_SOURCE)
