@@ -94,6 +94,10 @@ func (sfc LayerSurface) DrawBuffer(b SharedBuffer) {
 	C.samure_layer_surface_draw_buffer(sfc.Handle, b.Handle)
 }
 
+func (sfc LayerSurface) FrameDeltaTime() float64 {
+	return float64(sfc.Handle.frame_delta_time)
+}
+
 func (sfc LayerSurface) Surface() unsafe.Pointer {
 	return unsafe.Pointer(sfc.Handle.surface)
 }

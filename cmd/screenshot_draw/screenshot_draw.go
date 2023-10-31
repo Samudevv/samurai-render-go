@@ -52,6 +52,8 @@ func (s *ScreenshotDraw) OnEvent(ctx samure.Context, event interface{}) {
 		} else if e.Button == samure.ButtonRight && e.State == samure.StateReleased {
 			ctx.SetRunning(false)
 		}
+	case samure.EventPointerEnter:
+		ctx.SetPointerShape(samure.CursorShapeDefault)
 	}
 }
 
@@ -68,7 +70,7 @@ func (s *ScreenshotDraw) OnRender(ctx samure.Context, layerSurface samure.LayerS
 	c.SelectFontFace("sans-serif", cairo.FONT_SLANT_NORMAL, cairo.FONT_WEIGHT_BOLD)
 	c.SetFontSize(50)
 
-	str := fmt.Sprint("FPS: ", "sixty")
+	str := fmt.Sprintf("FPS: %.3f", 1.0/layerSurface.FrameDeltaTime())
 
 	te := c.TextExtents(str)
 	c.SetSourceRGBA(0.0, 0.0, 0.0, 0.0)
