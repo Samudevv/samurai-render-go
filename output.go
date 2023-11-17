@@ -189,3 +189,7 @@ func (o Output) XdgOutput() unsafe.Pointer {
 func (o Output) Scale() int {
 	return int(o.Handle.scale)
 }
+
+func (o Output) RefreshRate() int {
+	return int(o.Handle.refresh_rate)
+}

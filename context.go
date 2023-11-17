@@ -312,3 +312,13 @@ func (ctx Context) OutputManager() unsafe.Pointer {
 func (ctx Context) ScreencopyManager() unsafe.Pointer {
 	return unsafe.Pointer(ctx.Handle.screencopy_manager)
 }
+
+func (ctx Context) GetOutputRect() Rect {
+	r := C.samure_context_get_output_rect(ctx.Handle)
+	return Rect{
+		X: int(r.x),
+		Y: int(r.y),
+		W: int(r.w),
+		H: int(r.h),
+	}
+}
