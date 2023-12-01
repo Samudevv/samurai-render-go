@@ -1,4 +1,4 @@
-module github.com/PucklaJ/samurai-render-go
+module github.com/Samudevv/samurai-render-go
 
 go 1.21
 

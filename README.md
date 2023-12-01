@@ -1,6 +1,6 @@
 # SamuraiRender Go
 
-Go bindings to [SamuraiRender](https://github.com/PucklaJ/samurai-render) which is an easy to use library to render into the layer shell of wayland compositors.
+Go bindings to [SamuraiRender](https://github.com/Samudevv/samurai-render) which is an easy to use library to render into the layer shell of wayland compositors.
 
 ## Getting Started
 
@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"os"
 
-	samure "github.com/PucklaJ/samurai-render-go"
-	samureCairo "github.com/PucklaJ/samurai-render-go/backends/cairo"
+	samure "github.com/Samudevv/samurai-render-go"
+	samureCairo "github.com/Samudevv/samurai-render-go/backends/cairo"
 	"github.com/gotk3/gotk3/cairo"
 )
 
