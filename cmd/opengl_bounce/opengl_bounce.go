@@ -15,7 +15,7 @@ import (
 
 const (
 	vertexShaderSource = `
-	#version 410 core
+	#version 330 core
 	#extension GL_ARB_explicit_uniform_location : enable
 	layout (location = 0) in vec2 aPos;
 	layout (location = 0) uniform mat4 proj;
@@ -26,10 +26,10 @@ const (
 	`
 
 	fragmentShaderSource = `
-	#version 410 core
+	#version 330 core
 	out vec4 FragColor;
 	void main() {
-		FragColor = vec4(1.0, 0.5, 0.2, 1.0);
+		FragColor = vec4(1.0, 0.4745, 0.7765, 1.0);
 	}
 	`
 
@@ -115,8 +115,8 @@ func main() {
 
 	cfg := samure.CreateContextConfig(a)
 	cfg.PointerInteraction = true
-	cfg.GL.MajorVersion = 4
-	cfg.GL.MinorVersion = 1
+	cfg.GL.MajorVersion = 3
+	cfg.GL.MinorVersion = 3
 	cfg.GL.Samples = 4
 
 	bkd := &samureGL.Backend{}
@@ -136,9 +136,9 @@ func main() {
 	fmt.Println("OpenGL Version:", version)
 
 	// Set this so that you are not confused if nothing shows up
-	gl.Disable(gl.DEPTH_TEST)
-	gl.Disable(gl.CULL_FACE)
-	gl.Enable(gl.DEPTH_CLAMP)
+	// gl.Disable(gl.DEPTH_TEST)
+	// gl.Disable(gl.CULL_FACE)
+	// gl.Enable(gl.DEPTH_CLAMP)
 
 	// Initialise Vertex and Index buffers
 	gl.GenVertexArrays(1, &a.vao)
