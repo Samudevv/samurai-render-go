@@ -1,6 +1,6 @@
 /***********************************************************************************
  *                         This file is part of samurai-render
- *                    https://github.com/PucklaJ/samurai-render
+ *                    https://github.com/Samudevv/samurai-render
  ***********************************************************************************
  * Copyright (c) 2023 Jonas Pucher
  *
@@ -42,15 +42,19 @@ struct samure_cursor {
   struct wl_cursor_image *current_cursor_image;
   unsigned int current_image_index;
   double current_time;
+  uint32_t current_shape;
 };
+
+struct samure_cursor_engine;
 
 extern struct samure_cursor
 samure_init_cursor(struct samure_seat *seat, struct wl_cursor_theme *theme,
                    struct wl_compositor *compositor);
 extern void samure_destroy_cursor(struct samure_cursor cursor);
-extern void samure_cursor_set_shape(struct samure_cursor *cursor,
+extern void samure_cursor_set_shape(struct samure_cursor_engine *engine,
+                                    struct samure_cursor *cursor,
                                     struct wl_cursor_theme *theme,
-                                    const char *name);
+                                    uint32_t shape);
 
 struct samure_cursor_engine {
   struct wp_cursor_shape_manager_v1 *manager;

@@ -1,6 +1,6 @@
 /***********************************************************************************
  *                         This file is part of samurai-render
- *                    https://github.com/PucklaJ/samurai-render
+ *                    https://github.com/Samudevv/samurai-render
  ***********************************************************************************
  * Copyright (c) 2023 Jonas Pucher
  *
@@ -85,6 +85,11 @@ samure_create_context(struct samure_context_config *config) {
 
   if (SAMURE_IS_ERROR(error_code)) {
     SAMURE_DESTROY_ERROR(context, ctx, error_code);
+  }
+
+  if (ctx->config.force_client_cursors && reg_d.cursor_manager) {
+    wp_cursor_shape_manager_v1_destroy(reg_d.cursor_manager);
+    reg_d.cursor_manager = NULL;
   }
 
   if (reg_d.num_seats != 0) {

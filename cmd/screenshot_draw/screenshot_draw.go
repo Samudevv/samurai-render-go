@@ -52,8 +52,6 @@ func (s *ScreenshotDraw) OnEvent(ctx samure.Context, event interface{}) {
 		} else if e.Button == samure.ButtonRight && e.State == samure.StateReleased {
 			ctx.SetRunning(false)
 		}
-	case samure.EventPointerEnter:
-		ctx.SetPointerShape(samure.CursorShapeDefault)
 	}
 }
 

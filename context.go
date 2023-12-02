@@ -53,6 +53,7 @@ type ContextConfig struct {
 	MaxUpdateFrequency           int
 	NotCreateOutputLayerSurfaces bool
 	NotRequestFrame              bool
+	ForceClientCursors           bool
 	GL                           OpenGLConfig
 
 	App App
@@ -111,6 +112,9 @@ func (cfg ContextConfig) convertToC() C.struct_samure_context_config {
 	}
 	if cfg.NotRequestFrame {
 		c.not_request_frame = 1
+	}
+	if cfg.ForceClientCursors {
+		c.force_client_cursors = 1
 	}
 
 	c.on_event = C.samure_event_callback(C.globalOnEvent)

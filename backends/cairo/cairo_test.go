@@ -30,7 +30,7 @@ import (
 	"math"
 	"testing"
 
-	samure "github.com/PucklaJ/samurai-render-go"
+	samure "github.com/Samudevv/samurai-render-go"
 	"github.com/gotk3/gotk3/cairo"
 	"github.com/stretchr/testify/assert"
 )

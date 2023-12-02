@@ -29,7 +29,7 @@ package opengl
 import (
 	"testing"
 
-	samure "github.com/PucklaJ/samurai-render-go"
+	samure "github.com/Samudevv/samurai-render-go"
 	"github.com/go-gl/gl/v2.1/gl"
 	"github.com/stretchr/testify/assert"
 )
