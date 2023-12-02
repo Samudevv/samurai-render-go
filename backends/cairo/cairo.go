@@ -1,6 +1,6 @@
 /***********************************************************************************
  *                         This file is part of samurai-render-go
- *                    https://github.com/PucklaJ/samurai-render-go
+ *                    https://github.com/Samudevv/samurai-render-go
  ***********************************************************************************
  * Copyright (c) 2023 Jonas Pucher
  *
@@ -34,7 +34,7 @@ import "C"
 import (
 	"unsafe"
 
-	samure "github.com/PucklaJ/samurai-render-go"
+	samure "github.com/Samudevv/samurai-render-go"
 	"github.com/gotk3/gotk3/cairo"
 )
 
