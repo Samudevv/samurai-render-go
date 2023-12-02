@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"math/rand"
 	"os"
 	"strings"
 	"unsafe"
@@ -9,14 +10,18 @@ import (
 	samure "github.com/Samudevv/samurai-render-go"
 	samureGL "github.com/Samudevv/samurai-render-go/backends/opengl"
 	"github.com/go-gl/gl/v4.1-core/gl"
+	"github.com/go-gl/mathgl/mgl32"
 )
 
 const (
 	vertexShaderSource = `
 	#version 410 core
+	#extension GL_ARB_explicit_uniform_location : enable
 	layout (location = 0) in vec2 aPos;
+	layout (location = 0) uniform mat4 proj;
+	layout (location = 1) uniform mat3 model;
 	void main() {
-		gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+		gl_Position = proj * vec4(model * vec3(aPos.x, aPos.y, 1.0), 1.0);
 	}
 	`
 
@@ -27,6 +32,21 @@ const (
 		FragColor = vec4(1.0, 0.5, 0.2, 1.0);
 	}
 	`
+
+	quadSize  = 200.0
+	quadSpeed = 400.0
+)
+
+var (
+	vertices = []float32{
+		-0.5, 0.5,
+		0.5, 0.5,
+		0.5, -0.5,
+		-0.5, -0.5,
+	}
+	indices = []uint32{
+		0, 1, 2, 2, 3, 0,
+	}
 )
 
 type App struct {
@@ -34,6 +54,9 @@ type App struct {
 	vbo    uint32
 	vio    uint32
 	shader uint32
+
+	pos mgl32.Vec2
+	dir mgl32.Vec2
 }
 
 func (a *App) OnEvent(ctx samure.Context, event interface{}) {
@@ -44,15 +67,47 @@ func (a *App) OnEvent(ctx samure.Context, event interface{}) {
 }
 
 func (a *App) OnRender(ctx samure.Context, layerSurface samure.LayerSurface, outputGeo samure.Rect) {
+	// Setup projection matrix
+	proj := mgl32.Ortho2D(
+		float32(outputGeo.X),
+		float32(outputGeo.X+outputGeo.W),
+		float32(outputGeo.Y+outputGeo.H),
+		float32(outputGeo.Y),
+	)
+
 	gl.ClearColor(0.0, 0.0, 0.0, 0.0)
 	gl.Clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT)
+	gl.Viewport(0, 0, int32(outputGeo.W), int32(outputGeo.H))
 
 	gl.UseProgram(a.shader)
+	gl.UniformMatrix4fv(0, 1, false, &proj[0])
 	gl.BindVertexArray(a.vao)
-	gl.DrawElements(gl.TRIANGLES, 3, gl.UNSIGNED_INT, nil)
+	gl.DrawElements(gl.TRIANGLES, int32(len(indices)), gl.UNSIGNED_INT, nil)
 }
 
 func (a *App) OnUpdate(ctx samure.Context, deltaTime float64) {
+	r := ctx.GetOutputRect()
+	a.pos = a.pos.Add(a.dir.Mul(quadSpeed * float32(deltaTime)))
+
+	if a.pos[0]+quadSize/2.0 > float32(r.W) {
+		a.pos[0] = float32(r.W) - quadSize/2.0
+		a.dir[0] *= -1.0
+	} else if a.pos[0]-quadSize/2.0 < 0.0 {
+		a.pos[0] = quadSize / 2.0
+		a.dir[0] *= -1.0
+	}
+	if a.pos[1]+quadSize/2.0 > float32(r.H) {
+		a.pos[1] = float32(r.H) - quadSize/2.0
+		a.dir[1] *= -1.0
+	} else if a.pos[1]-quadSize/2.0 < 0.0 {
+		a.pos[1] = quadSize / 2.0
+		a.dir[1] *= -1.0
+	}
+
+	// Setup model matrix
+	model := mgl32.Translate2D(a.pos[0], a.pos[1]).Mul3(mgl32.Scale2D(quadSize, quadSize))
+	gl.UseProgram(a.shader)
+	gl.UniformMatrix3fv(1, 1, false, &model[0])
 }
 
 func main() {
@@ -86,15 +141,6 @@ func main() {
 	gl.Enable(gl.DEPTH_CLAMP)
 
 	// Initialise Vertex and Index buffers
-	vertices := []float32{
-		-0.5, -0.5,
-		0.5, -0.5,
-		0.0, 0.5,
-	}
-	indices := []uint32{
-		0, 1, 2,
-	}
-
 	gl.GenVertexArrays(1, &a.vao)
 	gl.BindVertexArray(a.vao)
 
@@ -188,6 +234,14 @@ func main() {
 
 	gl.DeleteShader(vertexShader)
 	gl.DeleteShader(fragmentShader)
+
+	// Set initial position of quad
+	r := ctx.GetOutputRect()
+	a.pos[0] = rand.Float32()*float32(r.W-quadSize) + quadSize/2.0
+	a.pos[1] = rand.Float32()*float32(r.H-quadSize) + quadSize/2.0
+	a.dir[0] = rand.Float32()
+	a.dir[1] = rand.Float32()
+	a.dir = a.dir.Normalize()
 
 	ctx.Run()
 }
