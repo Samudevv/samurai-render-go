@@ -26,9 +26,9 @@
 
 #pragma once
 
-#include "samure/backend.h"
-#include "samure/events.h"
-#include "samure/output.h"
+#include <samure/backend.h>
+#include <samure/events.h>
+#include <samure/output.h>
 
 extern void globalOnEvent(struct samure_context *ctx,
                           struct samure_event *event, void *user_data);

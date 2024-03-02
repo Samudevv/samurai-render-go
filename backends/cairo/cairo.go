@@ -27,8 +27,8 @@
 package cairo
 
 /*
-#include "../../samure/backends/cairo.h"
-#include "../../samure/context.h"
+#include <samure/backends/cairo.h>
+#include <samure/context.h>
 */
 import "C"
 import (

@@ -27,7 +27,7 @@
 package samure
 
 /*
-#include "samure/shared_memory.h"
+#include <samure/shared_memory.h>
 */
 import "C"
 import "unsafe"

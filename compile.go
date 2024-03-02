@@ -27,24 +27,7 @@
 package samure
 
 /*
-#cgo pkg-config: wayland-client wayland-cursor
-
-#include "samure/backend.c"
-#include "samure/backends/raw.c"
-#include "samure/callbacks.c"
-#include "samure/context.c"
-#include "samure/cursors.c"
-#include "samure/frame_timer.c"
-#include "samure/layer_surface.c"
-#include "samure/output.c"
-#include "samure/rect.c"
-#include "samure/seat.c"
-#include "samure/shared_memory.c"
-#include "samure/wayland/cursor-shape.c"
-#include "samure/wayland/tablet.c"
-#include "samure/wayland/layer-shell.c"
-#include "samure/wayland/screencopy.c"
-#include "samure/wayland/xdg-output.c"
-#include "samure/wayland/xdg-shell.c"
+#cgo pkg-config: wayland-client
+#cgo LDFLAGS: -lsamurai-render
 */
 import "C"

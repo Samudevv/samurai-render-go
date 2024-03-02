@@ -27,7 +27,7 @@
 package samure
 
 /*
-#include "samure/error_handling.h"
+#include <samure/error_handling.h>
 */
 import "C"
 import "unsafe"

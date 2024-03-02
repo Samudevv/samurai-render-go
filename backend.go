@@ -27,7 +27,7 @@
 package samure
 
 /*
-#include "samure/backends/raw.h"
+#include <samure/backends/raw.h>
 */
 import "C"
 import (

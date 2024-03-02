@@ -27,8 +27,8 @@
 package samure
 
 /*
-#include "samure/seat.h"
-#include "samure/wayland/cursor-shape.h"
+#include <samure/seat.h>
+#include <samure/wayland/cursor-shape.h>
 */
 import "C"
 import "unsafe"

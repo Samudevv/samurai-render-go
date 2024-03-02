@@ -25,8 +25,8 @@
  ************************************************************************************/
 
 #include "wrappers.h"
-#include "samure/context.h"
 #include <assert.h>
+#include <samure/context.h>
 #include <stdlib.h>
 
 struct wrapper_backend *create_wrapper_backend(int go_backend) {

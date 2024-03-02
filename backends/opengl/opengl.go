@@ -27,8 +27,8 @@
 package opengl
 
 /*
-#include "../../samure/backends/opengl.h"
-#include "../../samure/context.h"
+#include <samure/backends/opengl.h>
+#include <samure/context.h>
 */
 import "C"
 import (

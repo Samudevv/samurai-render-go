@@ -27,8 +27,8 @@
 package samure
 
 /*
-#include "samure/context.h"
-#include "samure/backends/opengl.h"
+#include <samure/context.h>
+#include <samure/backends/opengl.h>
 #include "wrappers.h"
 */
 import "C"

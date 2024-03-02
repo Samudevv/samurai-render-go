@@ -27,7 +27,8 @@
 package samure
 
 /*
-#include "samure/layer_surface.h"
+#include <samure/wayland/layer-shell.h>
+#include <samure/layer_surface.h>
 */
 import "C"
 import "unsafe"

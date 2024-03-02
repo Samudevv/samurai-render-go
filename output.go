@@ -27,7 +27,7 @@
 package samure
 
 /*
-#include "samure/output.h"
+#include <samure/output.h>
 #include <stdlib.h>
 */
 import "C"
@@ -184,12 +184,4 @@ func (o Output) Output() unsafe.Pointer {
 
 func (o Output) XdgOutput() unsafe.Pointer {
 	return unsafe.Pointer(o.Handle.xdg_output)
-}
-
-func (o Output) Scale() int {
-	return int(o.Handle.scale)
-}
-
-func (o Output) RefreshRate() int {
-	return int(o.Handle.refresh_rate)
 }

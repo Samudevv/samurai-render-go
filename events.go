@@ -27,7 +27,7 @@
 package samure
 
 /*
-#include "samure/events.h"
+#include <samure/events.h>
 */
 import "C"
 

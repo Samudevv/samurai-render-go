@@ -27,9 +27,9 @@
 package samure
 
 /*
-#include "samure/backend.h"
-#include "samure/events.h"
-#include "samure/output.h"
+#include <samure/backend.h>
+#include <samure/events.h>
+#include <samure/output.h>
 */
 import "C"
 import (
