@@ -27,7 +27,6 @@
 package samure
 
 /*
-#cgo pkg-config: wayland-client
-#cgo LDFLAGS: -lsamurai-render
+#cgo pkg-config: samurai-render
 */
 import "C"
