@@ -87,6 +87,10 @@ func (sfc LayerSurface) H() int {
 	return int(sfc.Handle.h)
 }
 
+func (sfc LayerSurface) Scale() float64 {
+	return float64(sfc.Handle.scale)
+}
+
 func (sfc LayerSurface) Destroy(ctx Context) {
 	C.samure_destroy_layer_surface(ctx.Handle, sfc.Handle)
 }
