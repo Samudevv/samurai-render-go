@@ -65,3 +65,23 @@ extern samure_error wrapper_backend_associate_layer_surface(
 
 extern void wrapper_backend_unassociate_layer_surface(
     struct samure_context *ctx, struct samure_layer_surface *layer_surface);
+
+extern void wrapper_backend_fptr_on_layer_surface_configure(
+    samure_on_layer_surface_configure_t f, struct samure_context *ctx,
+    struct samure_layer_surface *layer_surface, int32_t width, int32_t height);
+extern void
+wrapper_backend_fptr_render_start(samure_render_start_t f,
+                                  struct samure_context *ctx,
+                                  struct samure_layer_surface *layer_surface);
+extern void
+wrapper_backend_fptr_render_end(samure_render_end_t f,
+                                struct samure_context *ctx,
+                                struct samure_layer_surface *layer_surface);
+extern void wrapper_backend_fptr_destroy(samure_destroy_t f,
+                                         struct samure_context *ctx);
+extern samure_error wrapper_backend_fptr_associate_layer_surface(
+    samure_associate_layer_surface_t f, struct samure_context *ctx,
+    struct samure_layer_surface *layer_surface);
+extern void wrapper_backend_fptr_unassociate_layer_surface(
+    samure_unassociate_layer_surface_t f, struct samure_context *ctx,
+    struct samure_layer_surface *layer_surface);

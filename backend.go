@@ -28,6 +28,7 @@ package samure
 
 /*
 #include <samure/backends/raw.h>
+#include "wrappers.h"
 */
 import "C"
 import (
@@ -83,7 +84,7 @@ func (raw *RawBackend) Init(ctx Context) error {
 }
 
 func (raw *RawBackend) OnLayerSurfaceConfigure(ctx Context, layerSurface LayerSurface, width, height int) {
-	C.samure_backend_raw_on_layer_surface_configure(ctx.Handle, layerSurface.Handle, C.int32_t(width), C.int32_t(height))
+	C.wrapper_backend_fptr_on_layer_surface_configure(raw.handle.base.on_layer_surface_configure, ctx.Handle, layerSurface.Handle, C.int32_t(width), C.int32_t(height))
 }
 
 func (raw *RawBackend) RenderStart(ctx Context, layerSurface LayerSurface) {
@@ -91,15 +92,15 @@ func (raw *RawBackend) RenderStart(ctx Context, layerSurface LayerSurface) {
 }
 
 func (raw *RawBackend) RenderEnd(ctx Context, layerSurface LayerSurface) {
-	C.samure_backend_raw_render_end(ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
+	C.wrapper_backend_fptr_render_end(raw.handle.base.render_end, ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
 }
 
 func (raw *RawBackend) Destroy(ctx Context) {
-	C.samure_destroy_backend_raw(ctx.Handle)
+	C.wrapper_backend_fptr_destroy(raw.handle.base.destroy, ctx.Handle)
 }
 
 func (raw *RawBackend) AssociateLayerSurface(ctx Context, layerSurface LayerSurface) uint64 {
-	err := C.samure_backend_raw_associate_layer_surface(ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
+	err := C.wrapper_backend_fptr_associate_layer_surface(raw.handle.base.associate_layer_surface, ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
 	if err != ErrorNone {
 		return uint64(err)
 	}
@@ -107,7 +108,7 @@ func (raw *RawBackend) AssociateLayerSurface(ctx Context, layerSurface LayerSurf
 }
 
 func (raw *RawBackend) UnassociateLayerSurface(ctx Context, layerSurface LayerSurface) {
-	C.samure_backend_raw_unassociate_layer_surface(ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
+	C.wrapper_backend_fptr_unassociate_layer_surface(raw.handle.base.unassociate_layer_surface, ctx.Handle, (*C.struct_samure_layer_surface)(layerSurface.Handle))
 }
 
 func GetRaw(sfc LayerSurface) RawSurface {

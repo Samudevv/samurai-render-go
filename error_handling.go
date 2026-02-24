@@ -67,6 +67,12 @@ const (
 	ErrorCairoInit               = C.SAMURE_ERROR_CAIRO_INIT
 	ErrorSurfaceInit             = C.SAMURE_ERROR_SURFACE_INIT
 	ErrorOutputInit              = C.SAMURE_ERROR_OUTPUT_INIT
+	ErrorCursorTheme             = C.SAMURE_ERROR_CURSOR_THEME
+	ErrorFractionalScaleInit     = C.SAMURE_ERROR_FRACTIONAL_SCALE_INIT
+	ErrorViewportInit            = C.SAMURE_ERROR_VIEWPORT_INIT
+	ErrorProtocolVersion         = C.SAMURE_ERROR_PROTOCOL_VERSION
+	ErrorNoDependLib             = C.SAMURE_ERROR_NO_DEPEND_LIB
+	ErrorNoLib                   = C.SAMURE_ERROR_NO_LIB
 )
 
 type Error struct {

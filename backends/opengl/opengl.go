@@ -29,6 +29,7 @@ package opengl
 /*
 #include <samure/backends/opengl.h>
 #include <samure/context.h>
+#include "../../wrappers.h"
 */
 import "C"
 import (
@@ -38,13 +39,17 @@ import (
 )
 
 type Backend struct {
-	Handle *C.struct_samure_backend_opengl
+	Handle *C.struct_samure_backend
 }
 
 func (gl *Backend) Init(ctx samure.Context) error {
+	libname := C.CString("libsamurai-render-backend-opengl.so")
+	depname := C.CString("libEGL.so")
 	cCtx := (*C.struct_samure_context)(unsafe.Pointer(ctx.Handle))
+	defer C.free(unsafe.Pointer(libname))
+	defer C.free(unsafe.Pointer(depname))
 
-	gl_rs := C.samure_init_backend_opengl(cCtx, cCtx.config.gl)
+	gl_rs := C.samure_create_backend_from_lib(cCtx, libname, depname)
 	if gl_rs.error != samure.ErrorNone {
 		return samure.NewError(uint64(gl_rs.error))
 	}
@@ -59,8 +64,8 @@ func (gl *Backend) OnLayerSurfaceConfigure(ctx samure.Context, layerSurface samu
 	cSfc := (*C.struct_samure_layer_surface)(unsafe.Pointer(layerSurface.Handle))
 
 	bak := cCtx.backend
-	cCtx.backend = &gl.Handle.base
-	C.samure_backend_opengl_on_layer_surface_configure(cCtx, cSfc, C.int32_t(width), C.int32_t(height))
+	cCtx.backend = gl.Handle
+	C.wrapper_backend_fptr_on_layer_surface_configure(gl.Handle.on_layer_surface_configure, cCtx, cSfc, C.int32_t(width), C.int32_t(height))
 	cCtx.backend = bak
 }
 
@@ -68,8 +73,8 @@ func (gl *Backend) RenderStart(ctx samure.Context, layerSurface samure.LayerSurf
 	cCtx := (*C.struct_samure_context)(unsafe.Pointer(ctx.Handle))
 	cSfc := (*C.struct_samure_layer_surface)(unsafe.Pointer(layerSurface.Handle))
 	bak := cCtx.backend
-	cCtx.backend = &gl.Handle.base
-	C.samure_backend_opengl_render_start(cCtx, cSfc)
+	cCtx.backend = gl.Handle
+	C.wrapper_backend_fptr_render_start(gl.Handle.render_start, cCtx, cSfc)
 	cCtx.backend = bak
 }
 
@@ -77,16 +82,16 @@ func (gl *Backend) RenderEnd(ctx samure.Context, layerSurface samure.LayerSurfac
 	cCtx := (*C.struct_samure_context)(unsafe.Pointer(ctx.Handle))
 	cSfc := (*C.struct_samure_layer_surface)(unsafe.Pointer(layerSurface.Handle))
 	bak := cCtx.backend
-	cCtx.backend = &gl.Handle.base
-	C.samure_backend_opengl_render_end(cCtx, cSfc)
+	cCtx.backend = gl.Handle
+	C.wrapper_backend_fptr_render_end(gl.Handle.render_end, cCtx, cSfc)
 	cCtx.backend = bak
 }
 
 func (gl *Backend) Destroy(ctx samure.Context) {
 	cCtx := (*C.struct_samure_context)(unsafe.Pointer(ctx.Handle))
 	bak := cCtx.backend
-	cCtx.backend = &gl.Handle.base
-	C.samure_destroy_backend_opengl(cCtx)
+	cCtx.backend = gl.Handle
+	C.wrapper_backend_fptr_destroy(gl.Handle.destroy, cCtx)
 	cCtx.backend = bak
 }
 
@@ -94,17 +99,17 @@ func (gl *Backend) AssociateLayerSurface(ctx samure.Context, layerSurface samure
 	cCtx := (*C.struct_samure_context)(unsafe.Pointer(ctx.Handle))
 	cSfc := (*C.struct_samure_layer_surface)(unsafe.Pointer(layerSurface.Handle))
 	bak := cCtx.backend
-	cCtx.backend = &gl.Handle.base
+	cCtx.backend = gl.Handle
 	defer func() { cCtx.backend = bak }()
-	return uint64(C.samure_backend_opengl_associate_layer_surface(cCtx, cSfc))
+	return uint64(C.wrapper_backend_fptr_associate_layer_surface(gl.Handle.associate_layer_surface, cCtx, cSfc))
 }
 
 func (gl *Backend) UnassociateLayerSurface(ctx samure.Context, layerSurface samure.LayerSurface) {
 	cCtx := (*C.struct_samure_context)(unsafe.Pointer(ctx.Handle))
 	cSfc := (*C.struct_samure_layer_surface)(unsafe.Pointer(layerSurface.Handle))
 	bak := cCtx.backend
-	cCtx.backend = &gl.Handle.base
-	C.samure_backend_opengl_unassociate_layer_surface(cCtx, cSfc)
+	cCtx.backend = gl.Handle
+	C.wrapper_backend_fptr_unassociate_layer_surface(gl.Handle.unassociate_layer_surface, cCtx, cSfc)
 	cCtx.backend = bak
 }
 
@@ -118,10 +123,12 @@ func (gl Backend) MakeContextCurrent() {
 	C.samure_backend_opengl_make_context_current(gl.Handle, nil)
 }
 
-func (gl Backend) Display() unsafe.Pointer {
-	return unsafe.Pointer(gl.Handle.display)
-}
+// TODO: Display is not exposed
+// func (gl Backend) Display() unsafe.Pointer {
+// 	return unsafe.Pointer(gl.Handle.display)
+// }
 
-func (gl Backend) Context() unsafe.Pointer {
-	return unsafe.Pointer(gl.Handle.context)
-}
+// TODO: EGLContext is not exposed
+// func (gl Backend) Context() unsafe.Pointer {
+// 	return unsafe.Pointer(gl.Handle.context)
+// }

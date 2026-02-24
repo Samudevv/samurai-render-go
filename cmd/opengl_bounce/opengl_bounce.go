@@ -122,7 +122,7 @@ func main() {
 	bkd := &samureGL.Backend{}
 	ctx, err := samure.CreateContextWithBackend(cfg, bkd)
 	if err != nil {
-		fmt.Fprintln(os.Stderr, err)
+		fmt.Fprintf(os.Stderr, "failed to create OpenGL backend: %v\n", err)
 		os.Exit(1)
 	}
 	defer ctx.Destroy()

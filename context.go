@@ -26,6 +26,7 @@
 
 package samure
 
+// #cgo pkg-config: wayland-client
 /*
 #include <samure/context.h>
 #include <samure/backends/opengl.h>
