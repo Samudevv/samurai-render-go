@@ -2,7 +2,7 @@
  *                         This file is part of samurai-select
  *                    https://github.com/Samudevv/samurai-select
  ***********************************************************************************
- * Copyright (c) 2023 Jonas Pucher
+ * Copyright (c) 2026 Kassandra Pucher
  *
  * This software is provided ‘as-is’, without any express or implied
  * warranty. In no event will the authors be held liable for any damages
