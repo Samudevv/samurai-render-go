@@ -117,6 +117,7 @@ func main() {
 	cfg.PointerInteraction = true
 	cfg.GL.MajorVersion = 3
 	cfg.GL.MinorVersion = 3
+	cfg.GL.API = samure.EGLAPIOpenGL
 	cfg.GL.Samples = 4
 
 	bkd := &samureGL.Backend{}

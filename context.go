@@ -41,6 +41,10 @@ const (
 	RenderStateAlways = C.SAMURE_RENDER_STATE_ALWAYS
 	RenderStateNone   = C.SAMURE_RENDER_STATE_NONE
 	RenderStateOnce   = C.SAMURE_RENDER_STATE_ONCE
+
+	EGLAPIOpenGL   = C.EGL_OPENGL_API
+	EGLAPIOpenGLES = C.EGL_OPENGL_ES_API
+	EGLAPIOpenVG   = C.EGL_OPENVG_API
 )
 
 type Context struct {
@@ -80,6 +84,7 @@ type OpenGLConfig struct {
 	Debug        int
 	ColorSpace   int
 	RenderBuffer int
+	API          int
 }
 
 func DefaultOpenGLConfig() OpenGLConfig {
@@ -92,6 +97,7 @@ func DefaultOpenGLConfig() OpenGLConfig {
 		ProfileMask:  0x00000001,
 		ColorSpace:   0x308A,
 		RenderBuffer: 0x3084,
+		API:          EGLAPIOpenGL,
 	}
 }
 
@@ -144,6 +150,7 @@ func (cfg OpenGLConfig) convertToC() *C.struct_samure_opengl_config {
 	ptr.debug = C.int(cfg.Debug)
 	ptr.color_space = C.int(cfg.ColorSpace)
 	ptr.render_buffer = C.int(cfg.RenderBuffer)
+	ptr.api = C.int(cfg.API)
 	return ptr
 }
 
